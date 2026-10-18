@@ -1,0 +1,1355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>La Légende des Trois Mouskito</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Press+Start+2P&display=swap">
+<style>
+/* Console de poche : un écran 3:2 serti dans un boîtier sombre, contrôles tactiles dessous sur téléphone */
+:root{
+  --bg:#15121d; --bezel:#2a2538; --bezel-hi:#3c3552; --ink:#ece5d3; --muted:#9d95b0;
+  --gold:#f2c14e; --btn:#3b3550; --btn-a:#c4473c; --btn-b:#3e6db3;
+  --f-ui:"Pixelify Sans","Trebuchet MS",ui-sans-serif,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-ui);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#frame{width:min(100%,980px,calc((100vh - 90px) * 1.5));width:min(100%,980px,calc((100dvh - 90px) * 1.5));background:var(--bezel);border-radius:16px;padding:10px;box-sizing:border-box;box-shadow:inset 0 0 0 2px var(--bezel-hi),0 24px 60px rgba(0,0,0,.55)}
+canvas{display:block;width:100%;height:auto;aspect-ratio:3/2;max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges;background:#000;border-radius:6px;outline:none}
+canvas:focus-visible{box-shadow:0 0 0 3px var(--gold)}
+.help{margin:0;color:var(--muted);font-size:14px;text-align:center;line-height:1.6;max-width:62ch}
+.help kbd{font-family:inherit;font-size:13px;background:var(--btn);color:var(--ink);padding:1px 7px;border-radius:5px;border-bottom:2px solid #0c0a12;white-space:nowrap}
+#pad{display:none;width:min(100%,520px);max-width:100%;justify-content:space-between;align-items:center;gap:8px;box-sizing:border-box}
+body.touch #pad{display:flex}
+body.touch .help{display:none}
+body.touch #frame{width:min(100%,980px,calc((100vh - 250px) * 1.5));width:min(100%,980px,calc((100dvh - 250px) * 1.5))}
+.dpad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px)}
+.pbtn{appearance:none;border:0;background:var(--btn);color:var(--ink);font:600 18px var(--f-ui);border-radius:10px;box-shadow:0 4px 0 #0c0a12;touch-action:none;display:flex;align-items:center;justify-content:center}
+.pbtn:active,.pbtn.on{transform:translateY(3px);box-shadow:0 1px 0 #0c0a12}
+.pbtn:focus-visible{outline:2px solid var(--gold)}
+.dpad .up{grid-area:1/2}.dpad .left{grid-area:2/1}.dpad .right{grid-area:2/3}.dpad .down{grid-area:3/2}
+.mid{display:flex;flex-direction:column;gap:10px}
+.mid .pbtn{height:32px;padding:0 10px;font-size:13px;border-radius:16px}
+.ab{display:flex;gap:10px;align-items:center}
+.ab .pbtn{width:58px;height:58px;border-radius:50%;font-size:22px}
+.ab .a{background:var(--btn-a);margin-top:-30px}.ab .b{background:var(--btn-b)}
+body.touch{-webkit-touch-callout:none;overscroll-behavior:none}
+@media (orientation:landscape){
+  body.touch{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:1fr 1fr;grid-template-areas:"dpad frame ab" "dpad frame mid";align-items:center;justify-items:center;column-gap:14px}
+  body.touch #pad{display:contents}
+  body.touch .dpad{grid-area:dpad}
+  body.touch .ab{grid-area:ab;align-self:end}
+  body.touch .ab .a{margin-top:0}
+  body.touch .mid{grid-area:mid;align-self:start}
+  body.touch #frame{grid-area:frame;width:min(100%,calc((100vh - 24px) * 1.5));width:min(100%,calc((100dvh - 24px) * 1.5))}
+}
+@media (prefers-reduced-motion:reduce){.pbtn:active{transform:none}}
+</style>
+
+<div id="frame"><canvas id="c" width="960" height="640" tabindex="0" aria-label="La Légende des Trois Mouskito, jeu"></canvas></div>
+<p class="help"><kbd>Flèches</kbd> ou <kbd>WASD</kbd> se déplacer · <kbd>Espace</kbd> / <kbd>Entrée</kbd> parler, valider · <kbd>X</kbd> retour (maintenir pour courir) · <kbd>Échap</kbd> menu · <kbd>M</kbd> son</p>
+<div id="pad" aria-label="Manette tactile">
+  <div class="dpad">
+    <button class="pbtn up" data-k="up" aria-label="Haut">▲</button>
+    <button class="pbtn left" data-k="left" aria-label="Gauche">◀</button>
+    <button class="pbtn right" data-k="right" aria-label="Droite">▶</button>
+    <button class="pbtn down" data-k="down" aria-label="Bas">▼</button>
+  </div>
+  <div class="mid"><button class="pbtn" data-k="menu">MENU</button><button class="pbtn" data-k="mute">SON</button></div>
+  <div class="ab"><button class="pbtn b" data-k="b" aria-label="Bouton B">B</button><button class="pbtn a" data-k="a" aria-label="Bouton A">A</button></div>
+</div>
+
+<script>
+'use strict';
+/* ================= BASE ================= */
+const SW=240, SH=160, S=4;
+const cv=document.getElementById('c'), D=cv.getContext('2d');
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.imageSmoothingEnabled=false;return [c,x];}
+const [low,g]=mk(SW,SH);
+D.imageSmoothingEnabled=false;
+const F_DLG=(matchMedia('(pointer:coarse)').matches?'500 36px':'500 30px')+' "Pixelify Sans","Trebuchet MS",sans-serif';
+const F_UI='600 28px "Pixelify Sans","Trebuchet MS",sans-serif';
+const F_SM='500 22px "Pixelify Sans","Trebuchet MS",sans-serif';
+const F_XS='500 19px "Pixelify Sans","Trebuchet MS",sans-serif';
+const PS=n=>`${n}px "Press Start 2P",ui-monospace,monospace`;
+const C={edge:'#2c3150',mid:'#8fb0d8',fill:'#fbf7ec',text:'#2f3040',sh:'#d8d0bb',gold:'#f2c14e',hpG:'#5ac45c',hpY:'#f0c040',hpR:'#e0503c',xp:'#4aa0e8',dim:'#9a96a6'};
+const EYE='#2b2233',MOUTH='#a8524a',MD='#6e2f2c',FR='#23222e';
+function rng(s){return()=>{s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};}
+function hx(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function shade(h,a){const[r,gg,b]=hx(h);const f=v=>Math.max(0,Math.min(255,Math.round(v+a))).toString(16).padStart(2,'0');return'#'+f(r)+f(gg)+f(b);}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function harden(c){const x=c.getContext('2d'),d=x.getImageData(0,0,c.width,c.height),a=d.data;for(let i=3;i<a.length;i+=4)a[i]=a[i]>110?255:0;x.putImageData(d,0,0);}
+function outline(c,col){const x=c.getContext('2d'),w=c.width,h=c.height,d=x.getImageData(0,0,w,h),a=d.data,s=new Uint8ClampedArray(a),[r,gg,b]=hx(col);
+  const n=(X,Y)=>X>=0&&Y>=0&&X<w&&Y<h&&s[(Y*w+X)*4+3];
+  for(let y=0;y<h;y++)for(let X=0;X<w;X++){const i=(y*w+X)*4;if(s[i+3])continue;if(n(X-1,y)||n(X+1,y)||n(X,y-1)||n(X,y+1)){a[i]=r;a[i+1]=gg;a[i+2]=b;a[i+3]=255;}}
+  x.putImageData(d,0,0);}
+function ellp(x,cx,cy,rx,ry,col,y0=-1e9,y1=1e9){x.fillStyle=col;for(let yy=Math.ceil(cy-ry);yy<=Math.floor(cy+ry);yy++){if(yy<y0||yy>y1)continue;const dy=(yy-cy)/ry,w=Math.sqrt(Math.max(0,1-dy*dy))*rx;const L=Math.round(cx-w),R=Math.round(cx+w);x.fillRect(L,yy,Math.max(1,R-L),1);}}
+function sprite(w,h,fn,ol='#1f1a2e'){const[c,x]=mk(w+2,h+2);x.save();x.translate(1,1);const p=(X,Y,ww,hh,col)=>{if(ww<=0||hh<=0)return;x.fillStyle=col;x.fillRect(X,Y,ww,hh);};fn(x,p);x.restore();harden(c);if(ol)outline(c,ol);return c;}
+function flipC(c){const[n,x]=mk(c.width,c.height);x.translate(c.width,0);x.scale(-1,1);x.drawImage(c,0,0);return n;}
+
+/* ================= INPUT ================= */
+const KEYMAP={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',Space:'a',Enter:'a',NumpadEnter:'a',KeyE:'a',KeyK:'a',KeyX:'b',Backspace:'b',ShiftLeft:'b',ShiftRight:'b',KeyJ:'b',Escape:'menu',Tab:'menu',KeyP:'menu'};
+const held={};let pressQ=new Set(),pressed=new Set();const dirStack=[];
+function press(k){if(k==='mute'){toggleMute();return;}if(!held[k])pressQ.add(k);held[k]=true;if(['up','down','left','right'].includes(k)){const i=dirStack.indexOf(k);if(i>=0)dirStack.splice(i,1);dirStack.push(k);}audioCtx();}
+function release(k){held[k]=false;const i=dirStack.indexOf(k);if(i>=0)dirStack.splice(i,1);}
+addEventListener('keydown',e=>{if(e.key==='m'||e.key==='M'){toggleMute();return;}const k=KEYMAP[e.code];if(!k)return;e.preventDefault();if(e.repeat)return;press(k);});
+addEventListener('keyup',e=>{const k=KEYMAP[e.code];if(k)release(k);});
+addEventListener('blur',()=>{for(const k in held)held[k]=false;dirStack.length=0;});
+cv.addEventListener('pointerdown',()=>{cv.focus();if(scene===TITLE)press('a'),setTimeout(()=>release('a'),60);});
+document.querySelectorAll('#pad .pbtn').forEach(b=>{const k=b.dataset.k;
+  b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('on');if(k==='mute'){toggleMute();return;}press(k);try{b.setPointerCapture(e.pointerId);}catch(_){}});
+  const up=()=>{b.classList.remove('on');if(k!=='mute')release(k);};
+  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
+  b.addEventListener('contextmenu',e=>e.preventDefault());});
+if(matchMedia('(pointer:coarse)').matches)document.body.classList.add('touch');
+addEventListener('touchstart',()=>document.body.classList.add('touch'),{once:true,passive:true});
+const DIRV=[[0,1],[0,-1],[-1,0],[1,0]];const DIRK={down:0,up:1,left:2,right:3};
+function heldDir(){for(let i=dirStack.length-1;i>=0;i--)if(held[dirStack[i]])return DIRK[dirStack[i]];return null;}
+
+/* ================= AUDIO ================= */
+let AC=null,muted=false;
+function audioCtx(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){AC=null;}}if(AC&&AC.state==='suspended')AC.resume().catch(()=>{});return AC;}
+function tone(f,dur,type='square',vol=.05,slide=0,delay=0){if(muted)return;const a=audioCtx();if(!a)return;const t=a.currentTime+delay,o=a.createOscillator(),gn=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(30,f+slide),t+dur);gn.gain.setValueAtTime(vol,t);gn.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(gn).connect(a.destination);o.start(t);o.stop(t+dur+.03);}
+function noise(dur,vol=.08,delay=0,freq=1200){if(muted)return;const a=audioCtx();if(!a)return;const t=a.currentTime+delay,n=Math.floor(a.sampleRate*dur),b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource();s.buffer=b;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;const gn=a.createGain();gn.gain.value=vol;s.connect(f).connect(gn).connect(a.destination);s.start(t);}
+const seq=(fs,d,gap,type='square',vol=.045)=>fs.forEach((f,i)=>tone(f,d,type,vol,0,i*gap));
+const SFX={blip:()=>tone(880,.04,'square',.03),sel:()=>{tone(660,.05,'square',.04);tone(990,.07,'square',.04,0,.05);},back:()=>tone(440,.07,'square',.035,-150),
+  bump:()=>tone(90,.07,'square',.05),text:()=>tone(1300,.012,'square',.012),hit:()=>{noise(.16,.14,0,900);tone(170,.12,'square',.05,-90);},crit:()=>{noise(.28,.18,0,700);tone(240,.22,'sawtooth',.06,-170);},
+  heal:()=>seq([523,659,784,1046],.1,.07,'triangle',.06),buff:()=>seq([392,494,587,784],.07,.05),debuff:()=>seq([587,494,392,294],.07,.05),
+  encounter:()=>{for(let i=0;i<10;i++)tone(i%2?520:330,.06,'square',.045,0,i*.06);},item:()=>seq([784,988,1175,1568],.12,.1),level:()=>seq([523,659,784,659,784,1046],.11,.09),
+  victory:()=>seq([523,523,523,659,784,659,784,1046],.14,.12),door:()=>{noise(.1,.06,0,500);tone(200,.1,'triangle',.06,-70);},faint:()=>tone(520,.6,'square',.05,-470),
+  miss:()=>tone(300,.15,'triangle',.05,250),boom:()=>{noise(.5,.1,0,260);tone(90,.3,'triangle',.06,-40);},dig:()=>{noise(.08,.09,0,600);noise(.08,.09,.18,600);noise(.08,.09,.36,600);},
+  flee:()=>seq([400,600,800],.06,.05),blower:()=>{noise(.9,.07,0,350);noise(.9,.05,0,900);},snore:()=>{tone(90,.7,'sawtooth',.035,-30);tone(70,.7,'sawtooth',.035,-20,.8);},start:()=>seq([392,523,659,784,1046,784,1046],.12,.1)};
+function toggleMute(){muted=!muted;showToast(muted?'Son coupé':'Son activé');if(!muted)SFX.sel();}
+
+/* ================= TIMING, TWEENS, PROMISES ================= */
+let T=0,FADE=0,FLASH=0,BUSY=0;const waits=[],tweens=[];
+const wait=n=>new Promise(r=>waits.push({n,r}));
+const until=pred=>new Promise(r=>waits.push({pred,r}));
+function tw(o,k,to,n,ease='io'){return new Promise(r=>{const from=o[k];if(n<=0){o[k]=to;r();return;}tweens.push({o,k,from,to,n,i:0,ease,r});});}
+const EASE={lin:t=>t,io:t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2,out:t=>1-(1-t)*(1-t)};
+const fadeTo=(a,n=20)=>tw(window,'__f',a,n,'lin');
+Object.defineProperty(window,'__f',{get:()=>FADE,set:v=>{FADE=v;}});
+function run(fn){BUSY++;Promise.resolve().then(fn).catch(e=>console.error(e)).finally(()=>{BUSY--;});}
+const frType=s=>s.replace(/ ([!?:;»])/g,' $1').replace(/« /g,'« ');
+
+/* ================= LOOKS & SPRITES ================= */
+const LOOKS={
+ guilhem:{skin:'#f2c7a2',skinS:'#d9a27e',hair:'#7a4a2a',hairH:'#a06a40',hairStyle:'wavy',beard:'trim',beardC:'#8c5b36',scarf:'#b5443a',scarfS:'#8a302a',shirt:'#3f7c4b',shirtS:'#2f5d39',stripe:'#e9edf0',pattern:'band',pants:'#3b4a6b',shoes:'#3a2a20',tall:1},
+ nicodeme:{skin:'#f4c4aa',skinS:'#d9a18a',hair:'#2a1f1d',hairH:'#4a3830',hairStyle:'long',beard:'long',beardC:'#2c211e',glasses:true,shirt:'#ddd2ba',shirtS:'#bfb196',stripe:'#7b7063',pattern:'stripes',pants:'#4a4038',shoes:'#2b2018',tall:0},
+ yvain:{skin:'#f5caa8',skinS:'#dba886',hair:'#6b4426',hairH:'#8b5c36',hairStyle:'short',beard:'short',beardC:'#a8653c',glasses:true,cap:'#2f5a8f',capS:'#21426c',shirt:'#1f2a44',shirtS:'#161e33',stripe:'#e8833a',pattern:'logo',straps:true,pants:'#5a5a64',shoes:'#222228',tall:2},
+ patrick:{skin:'#eebf98',skinS:'#d29c76',hair:'#9a9a9a',hairH:'#bdbdbd',hairStyle:'short',beard:'mustache',beardC:'#8a8a8a',capFront:'#c0392b',capS:'#8e2a20',shirt:'#5d6e3a',shirtS:'#46542b',pants:'#4b4038',shoes:'#2b2018',tall:0},
+ maman:{skin:'#f3cfb0',skinS:'#d9ae8c',hair:'#8a4b2a',hairH:'#a8653d',hairStyle:'bun',shirt:'#c76b8f',shirtS:'#a5547a',apron:'#f4efe4',skirt:'#7a4560',pants:'#e8c4a8',shoes:'#4a2a2a',tall:0},
+ irma:{skin:'#e8b88f',skinS:'#c99671',hair:'#7b3f9e',hairH:'#a066c2',hairStyle:'scarf',shirt:'#3d2a5c',shirtS:'#2b1d42',skirt:'#5a2a6e',pants:'#3d2a5c',shoes:'#2a1a30',tall:0},
+ maitre:{skin:'#f0c4a0',skinS:'#d4a07c',hair:'#e6e6e6',hairH:'#ffffff',hairStyle:'bald',beard:'long',beardC:'#e2e2e2',glasses:true,shirt:'#e9e2d0',shirtS:'#cfc5ad',apron:'#8a5a36',pants:'#4a4a52',shoes:'#2b2018',tall:1},
+ emeric:{skin:'#f2c8a4',skinS:'#d6a684',hair:'#b08a4a',hairH:'#caa462',hairStyle:'short',beard:'trim',beardC:'#9a7440',shirt:'#c0392b',shirtS:'#962c20',pants:'#3a4a6a',shoes:'#e8e8e8',tall:1},
+ kid:{skin:'#f4cfae',skinS:'#d8ad8a',hair:'#e0b050',hairH:'#f0cc70',hairStyle:'short',shirt:'#e0583c',shirtS:'#b8442d',pants:'#3a5a8a',shoes:'#222',tall:-2},
+ mamie:{skin:'#efc9a8',skinS:'#d3a785',hair:'#d8d8e0',hairH:'#f2f2f8',hairStyle:'bun',glasses:true,shirt:'#6a8fb5',shirtS:'#557596',skirt:'#4c6a8a',pants:'#d8b898',shoes:'#333',tall:-1},
+ varlope:{skin:'#f0c8a4',skinS:'#d4a684',hair:'#5a5a62',hairH:'#7a7a84',hairStyle:'short',beard:'mustache',beardC:'#4a4a52',shirt:'#e0d8c4',shirtS:'#c4baa4',apron:'#4a6a3a',pants:'#3a3a44',shoes:'#2b2018',tall:2},
+ eric:{skin:'#f0c4a0',skinS:'#d4a07c',hair:'#2a2a2a',hairH:'#4a4a4a',hairStyle:'short',beard:'short',beardC:'#2a2a2a',shirt:'#e0a030',shirtS:'#c08820',pants:'#3a5a8a',shoes:'#eeeeee',tall:1},
+ corail:{skin:'#c8946a',skinS:'#a8784e',hair:'#1a1a1a',hairH:'#3a3a3a',hairStyle:'short',shirt:'#e05a3a',shirtS:'#b8442a',stripe:'#ffffff',pattern:'band',pants:'#1a2a3a',shoes:'#222222',tall:1},
+ rocco:{skin:'#d8a070',skinS:'#b8804e',hair:'#f0d080',hairH:'#fff0b0',hairStyle:'wavy',beard:'short',beardC:'#c8a050',shirt:'#3ab0c0',shirtS:'#2a8a98',stripe:'#ffffff',pattern:'band',pants:'#1a3a5a',shoes:'#c8946a',tall:2},
+ monsieur:{skin:'#f0d0b8',skinS:'#d0b098',hair:'#c8c8d0',hairH:'#e0e0e8',hairStyle:'bald',beard:'mustache',beardC:'#a0a0a8',glasses:true,shirt:'#1a1a2a',shirtS:'#10101a',stripe:'#3a8ad0',pattern:'band',pants:'#1a1a2a',shoes:'#1a1a2a',tall:0},
+ serveur:{skin:'#f0c8a4',skinS:'#d4a684',hair:'#1a1a1a',hairH:'#3a3a3a',hairStyle:'short',beard:'mustache',beardC:'#1a1a1a',shirt:'#f4f4f4',shirtS:'#d8d8d8',apron:'#1a1a1a',pants:'#1a1a1a',shoes:'#000000',tall:1},
+ moine:{skin:'#e8c09a',skinS:'#c99e7a',hair:'#8a6a4a',hairH:'#a88a6a',hairStyle:'bald',shirt:'#e0802a',shirtS:'#c0661a',stripe:'#a8401a',pattern:'band',skirt:'#d0701e',pants:'#c0661a',shoes:'#6a4a2a',tall:1},
+ baron:{skin:'#f4cfb0',skinS:'#d8ab8c',hair:'#d8b040',hairH:'#f0d070',hairStyle:'short',beard:'mustache',beardC:'#c89a30',shirt:'#6a2a7a',shirtS:'#4e1e5a',stripe:'#f2c14e',pattern:'band',pants:'#3a1a4a',shoes:'#1a1a1a',tall:1},
+ comte:{skin:'#d8c8c0',skinS:'#b8a8a0',hair:'#cfcfd8',hairH:'#ffffff',hairStyle:'bald',beard:'trim',beardC:'#b8b8c8',glasses:true,shirt:'#2a1a3a',shirtS:'#1a1028',stripe:'#c0392b',pattern:'band',pants:'#1a1028',shoes:'#000000',tall:2},
+ melisande:{skin:'#e8b890',skinS:'#c99670',hair:'#3a2418',hairH:'#5a3a28',hairStyle:'long',shirt:'#4a7a5a',shirtS:'#365a42',pants:'#5a4a3a',shoes:'#3a2a1a',tall:0},
+ laetitia:{skin:'#f4d0b0',skinS:'#d8ae8e',hair:'#c89a50',hairH:'#e0b870',hairStyle:'bun',glasses:true,shirt:'#7a8a3a',shirtS:'#5e6c2a',pants:'#4a4a5a',shoes:'#3a2a1a',tall:-1},
+ pereG:{skin:'#f2c8a4',skinS:'#d6a684',hair:'#9a9aa0',hairH:'#c0c0c8',hairStyle:'short',beard:'mustache',beardC:'#8a8a90',shirt:'#5a6a8a',shirtS:'#45546e',apron:'#7a4a28',pants:'#3a3a44',shoes:'#2b2018',tall:1},
+ ombre:{skin:'#000000',skinS:'#000000',hair:'#000000',hairStyle:'short',shirt:'#000000',shirtS:'#000000',pants:'#000',shoes:'#000',tall:0}
+};
+function makeWalker(L,dir,step){
+  const t=L.tall||0,bh=22+t,d=dir===3?2:dir;
+  const c=sprite(16,bh,(x,p)=>{
+    const ly=17+t,sk=L.skin,ss=L.skinS,sh=L.shirt,shS=L.shirtS,hair=L.hair,hH=L.hairH||hair,bd=L.beardC||hair,pt=L.pants;
+    // legs
+    if(d<2){const lh=step===1?3:4,rh=step===2?3:4;p(5,ly,3,lh,pt);p(8,ly,3,rh,pt);p(7,ly+1,1,Math.min(lh,rh)-1,shade(pt,-35));p(5,ly+lh,3,1,L.shoes);p(8,ly+rh,3,1,L.shoes);}
+    else if(step===0){p(6,ly,4,4,pt);p(5,ly+4,4,1,L.shoes);}
+    else if(step===1){p(8,ly,3,3,shade(pt,-25));p(8,ly+3,3,1,L.shoes);p(4,ly,3,4,pt);p(3,ly+4,3,1,L.shoes);}
+    else {p(4,ly,3,3,shade(pt,-25));p(3,ly+3,3,1,L.shoes);p(8,ly,3,4,pt);p(7,ly+4,3,1,L.shoes);}
+    // body
+    const bx=d<2?4:5,bw=d<2?8:6;
+    p(bx,11,bw,6+t,sh);p(bx+bw-2,11,2,6+t,shS);
+    if(L.pattern==='band')p(bx,13,bw,2,L.stripe);
+    if(L.pattern==='stripes')for(let y=12;y<17+t;y+=2)p(bx,y,bw,1,L.stripe);
+    if(L.pattern==='logo'&&d===0)p(6,13,4,2,L.stripe);
+    if(L.straps&&d===0){p(5,11,1,5,'#e6e6e6');p(10,11,1,5,'#e6e6e6');}
+    if(L.straps&&d===1){p(5,12,6,5,'#4a6a3a');p(5,12,6,1,'#5f8a4a');}
+    if(L.apron&&d===0)p(5,12,6,5+t,L.apron);
+    if(L.apron&&d===2)p(5,12,2,5+t,L.apron);
+    if(L.skirt){if(d<2)p(4,ly-1,8,3,L.skirt);else p(5,ly-1,6,3,L.skirt);}
+    // arms
+    if(d<2){const lo=step===1?1:step===2?-1:0;p(2,12+lo,2,4+t,sh);p(12,12-lo,2,4+t,shS);if(L.pattern==='band'){p(2,13+lo,2,2,L.stripe);p(12,13-lo,2,2,L.stripe);}p(2,16+t+lo,2,1,sk);p(12,16+t-lo,2,1,ss);}
+    else {const ax=step===1?6:step===2?8:7;p(ax,12,2,4+t,shS);if(L.pattern==='band')p(ax,13,2,2,L.stripe);p(ax,16+t,2,1,sk);}
+    // head
+    if(d===0){p(3,2,10,9,sk);x.clearRect(3,2,1,1);x.clearRect(12,2,1,1);x.clearRect(3,10,1,1);x.clearRect(12,10,1,1);p(12,3,1,7,ss);p(2,6,1,2,sk);p(13,6,1,2,ss);p(5,6,1,2,EYE);p(10,6,1,2,EYE);if(!L.beard||L.beard==='mustache')p(7,9,2,1,MOUTH);}
+    else if(d===1){p(3,2,10,9,sk);x.clearRect(3,2,1,1);x.clearRect(12,2,1,1);p(2,6,1,2,sk);p(13,6,1,2,sk);}
+    else {p(4,2,9,9,sk);x.clearRect(12,2,1,1);x.clearRect(12,10,1,1);p(3,7,1,1,sk);p(5,6,1,2,EYE);if(!L.beard||L.beard==='mustache')p(4,9,2,1,MOUTH);}
+    // beard
+    const bv=shade(bd,-22);
+    if(L.beard==='trim'){if(d===0){p(3,8,10,2,bd);p(4,10,8,1,bd);p(3,6,1,2,bd);p(12,6,1,2,bd);p(6,9,4,1,MOUTH);}else if(d===2){p(4,8,6,2,bd);p(5,10,4,1,bd);p(8,6,1,2,bd);p(4,9,1,1,MOUTH);}}
+    if(L.beard==='short'){if(d===0){p(3,8,10,3,bd);p(3,6,1,2,bd);p(12,6,1,2,bd);p(4,11,8,1,bd);p(6,9,4,1,MOUTH);p(4,10,1,1,bv);p(10,9,1,1,bv);}else if(d===2){p(3,8,7,3,bd);p(4,11,5,1,bd);p(8,6,1,2,bd);p(4,9,1,1,MOUTH);}else{p(2,7,1,3,bd);p(13,7,1,3,bd);}}
+    if(L.beard==='long'){if(d===0){p(3,8,10,3,bd);p(3,6,1,2,bd);p(12,6,1,2,bd);p(3,11,10,3,bd);p(4,14,8,1,bd);p(5,15,6,1,bd);p(6,9,4,1,MOUTH);p(5,12,1,1,bv);p(9,13,1,1,bv);p(7,11,1,1,bv);}else if(d===2){p(3,8,7,3,bd);p(3,11,6,3,bd);p(4,14,4,1,bd);p(8,6,1,2,bd);p(4,9,1,1,MOUTH);}else{p(2,7,1,4,bd);p(13,7,1,4,bd);}}
+    if(L.beard==='mustache'){if(d===0)p(5,8,6,1,bd);else if(d===2)p(3,8,3,1,bd);}
+    // glasses
+    if(L.glasses){if(d===0){p(4,5,3,1,FR);p(4,8,3,1,FR);p(4,5,1,4,FR);p(6,5,1,4,FR);p(9,5,3,1,FR);p(9,8,3,1,FR);p(9,5,1,4,FR);p(11,5,1,4,FR);p(7,6,2,1,FR);p(5,6,1,1,'#dceef8');p(10,6,1,1,'#dceef8');p(5,7,1,1,EYE);p(10,7,1,1,EYE);}else if(d===2){p(4,5,3,1,FR);p(4,8,2,1,FR);p(6,5,1,3,FR);p(7,6,3,1,FR);}else{p(2,6,1,1,FR);p(13,6,1,1,FR);}}
+    // hair
+    const hs=(L.cap||L.capFront)?'capped':L.hairStyle;
+    if(hs==='wavy'){if(d===0){p(3,0,10,3,hair);p(2,1,1,7,hair);p(13,1,1,7,hair);p(3,3,5,1,hair);p(10,3,2,1,hair);p(4,0,5,1,hH);}else if(d===1){p(2,0,12,10,hair);p(3,10,10,1,hair);p(4,1,6,1,hH);}else{p(4,0,9,3,hair);p(8,2,5,7,hair);p(4,3,3,1,hair);p(5,0,5,1,hH);p(12,9,1,2,hair);}}
+    if(hs==='long'){if(d===0){p(3,0,10,3,hair);p(2,2,1,5,hair);p(13,2,1,5,hair);p(5,0,4,1,hH);}else if(d===1){p(2,0,12,9,hair);p(7,9,2,6,hair);p(7,9,2,1,'#5a3a2a');p(5,1,4,1,hH);}else{p(4,0,9,3,hair);p(9,2,4,6,hair);p(12,7,2,6,hair);p(5,0,5,1,hH);}}
+    if(hs==='short'){if(d===0){p(3,0,10,2,hair);p(2,1,1,4,hair);p(13,1,1,4,hair);p(4,2,3,1,hair);p(5,0,4,1,hH);}else if(d===1){p(2,0,12,8,hair);p(4,1,5,1,hH);}else{p(4,0,9,2,hair);p(10,2,3,5,hair);p(5,0,4,1,hH);}}
+    if(hs==='bun'){if(d===0){p(3,0,10,3,hair);p(2,1,1,8,hair);p(13,1,1,8,hair);p(5,0,6,1,hH);}else if(d===1){p(2,0,12,9,hair);p(6,0,4,3,shade(hair,-18));}else{p(4,0,9,3,hair);p(9,2,4,7,hair);p(11,0,3,3,shade(hair,-18));}}
+    if(hs==='bald'){if(d===0){p(2,5,1,3,hair);p(13,5,1,3,hair);p(5,3,3,1,shade(sk,22));}else if(d===1)p(2,6,12,3,hair);else p(10,5,3,3,hair);}
+    if(hs==='scarf'){if(d===0){p(2,0,12,4,hair);p(2,4,1,4,hair);p(13,4,1,4,hair);p(4,1,8,1,hH);}else if(d===1){p(2,0,12,10,hair);p(6,9,4,3,hH);}else{p(4,0,9,4,hair);p(9,3,4,6,hair);p(5,1,6,1,hH);}}
+    if(L.cap){if(d===0){p(3,0,10,3,L.cap);p(6,2,4,1,L.capS);p(2,3,1,3,hair);p(13,3,1,3,hair);}else if(d===1){p(2,0,12,4,L.cap);p(3,4,10,2,L.capS);}else{p(4,0,9,3,L.cap);p(11,2,4,1,L.capS);p(10,3,3,3,hair);}}
+    if(L.capFront){if(d===0){p(3,0,10,3,L.capFront);p(2,3,12,1,L.capS);p(2,4,1,2,hair);p(13,4,1,2,hair);}else if(d===1){p(2,0,12,4,L.capFront);p(3,4,10,3,hair);}else{p(4,0,9,3,L.capFront);p(1,3,5,1,L.capS);p(10,3,3,3,hair);}}
+    if(d===2)p(9,6,2,2,ss);
+    // scarf
+    if(L.scarf){if(d===0){p(3,10,10,2,L.scarf);p(3,11,10,1,L.scarfS);p(9,12,2,4,L.scarf);p(9,15,2,1,L.scarfS);}else if(d===1){p(3,10,10,2,L.scarf);p(4,12,2,3,L.scarfS);}else{p(4,10,8,2,L.scarf);p(10,12,3,3,L.scarfS);}}
+  });
+  return dir===3?flipC(c):c;
+}
+const WK={};
+function walker(k){if(!WK[k]){WK[k]=[0,1,2,3].map(d=>[0,1,2].map(s=>makeWalker(LOOKS[k],d,s)));}return WK[k];}
+function makeBust(L,back){
+  return sprite(48,48,(x,p)=>{
+    const E=(cx,cy,rx,ry,col,y0,y1)=>ellp(x,cx,cy,rx,ry,col,y0,y1);
+    const sk=L.skin,ss=L.skinS,sh=L.shirt,shS=L.shirtS,hair=L.hair,hH=L.hairH||hair,bd=L.beardC||hair,hD=shade(hair,-28),bv=shade(bd,-24),bl=shade(bd,22);
+    E(24,47,22,11,shS,36,47);p(2,43,44,5,shS);E(22,47,20,11,sh,36,47);p(2,44,40,4,sh);
+    if(L.pattern==='band'){E(24,47,22,11,L.stripe,41,43);p(2,41,44,3,L.stripe);const r=rng(5);for(let i=0;i<40;i++){const a=4+(r()*40|0),b=37+(r()*11|0);if(b<41||b>43)p(a,b,1,1,shade(sh,-18));}}
+    if(L.pattern==='stripes')for(let y=37;y<48;y+=4){E(24,47,22,11,L.stripe,y,y+1);p(2,Math.max(43,y),44,y>=43?2:0,L.stripe);}
+    if(L.pattern==='logo'&&!back){p(19,41,10,2,L.stripe);p(17,43,8,2,L.stripe);p(26,39,3,2,L.stripe);}
+    if(L.straps){p(9,37,3,11,'#e9e9e9');p(36,37,3,11,'#e9e9e9');}
+    if(L.apron&&!back){p(15,37,18,11,L.apron);}
+    p(19,30,10,8,sk);p(19,34,10,2,ss);
+    if(!back){
+      E(24,20,11,13,ss);E(23,19,10,12,sk);E(12,21,2,3,sk);E(36,21,2,3,ss);
+      p(16,15,6,2,hD);p(27,15,6,2,hD);
+      p(17,18,4,2,'#ffffff');p(18,18,2,2,EYE);p(27,18,4,2,'#ffffff');p(28,18,2,2,EYE);
+      p(23,19,2,5,ss);p(22,23,4,1,ss);p(15,23,3,1,'#eaa190');p(31,23,3,1,'#eaa190');
+      const mouth=()=>{p(19,26,10,1,MD);p(20,27,8,2,'#ffffff');p(21,29,6,1,MD);p(19,25,1,1,MD);p(28,25,1,1,MD);};
+      mouth();
+      if(L.beard==='trim'){E(24,27,12,8,bd,24,35);p(12,17,3,9,bd);p(34,17,3,9,bd);p(19,24,10,2,bd);mouth();for(const[a,b]of[[15,28],[31,29],[24,32],[18,31]])p(a,b,1,1,bv);}
+      if(L.beard==='short'){E(24,27,13,9,bd,23,36);p(12,16,3,10,bd);p(34,16,3,10,bd);p(18,23,12,3,bd);mouth();for(const[a,b]of[[15,27],[32,28],[24,33],[19,31],[29,32],[14,31]])p(a,b,1,1,bv);for(const[a,b]of[[17,29],[30,26],[22,34]])p(a,b,1,1,bl);}
+      if(L.beard==='long'){E(24,31,14,14,bd,23,45);p(11,16,3,10,bd);p(35,16,3,10,bd);p(18,23,12,3,bd);mouth();for(const[a,b]of[[16,33],[30,35],[24,40],[20,37],[28,39],[14,29],[34,30],[23,43]])p(a,b,1,1,bv);for(const[a,b]of[[18,35],[27,33],[22,41]])p(a,b,1,1,bl);}
+      if(L.beard==='mustache'){p(18,24,12,2,bd);}
+      if(L.glasses){p(15,16,8,1,FR);p(15,21,8,1,FR);p(15,16,1,6,FR);p(22,16,1,6,FR);p(26,16,8,1,FR);p(26,21,8,1,FR);p(26,16,1,6,FR);p(33,16,1,6,FR);p(23,18,3,1,FR);p(12,18,3,1,FR);p(34,18,3,1,FR);p(16,17,1,1,'#ffffff');p(27,17,1,1,'#ffffff');}
+      const hs=(L.cap||L.capFront)?'capped':L.hairStyle;
+      if(hs==='wavy'){E(24,11,13,8,hair,2,14);p(11,9,3,14,hair);p(34,9,3,14,hair);E(19,13,8,3,hair,10,16);p(15,15,3,1,hair);p(16,5,10,1,hH);p(28,7,5,1,hH);p(13,9,3,1,hH);p(20,11,5,1,hH);}
+      if(hs==='long'){E(24,12,12,8,hair,3,14);p(12,11,2,12,hair);p(34,11,2,12,hair);p(23,5,2,6,hD);p(17,6,5,1,hH);p(28,6,4,1,hH);}
+      if(hs==='short'){E(24,11,12,7,hair,3,13);p(12,10,2,8,hair);p(34,10,2,8,hair);p(18,6,8,1,hH);}
+      if(hs==='bun'){E(24,12,12,8,hair,3,14);E(24,5,5,4,hD);p(11,11,3,14,hair);p(34,11,3,14,hair);p(18,7,6,1,hH);}
+      if(hs==='bald'){p(11,15,3,9,hair);p(34,15,3,9,hair);p(18,9,6,2,shade(sk,25));}
+      if(hs==='scarf'){E(24,11,14,9,hair,1,16);p(10,14,4,16,hair);p(34,14,4,16,hair);p(14,6,20,1,hH);}
+      if(L.cap){E(24,12,13,8,L.cap,3,15);p(11,14,26,2,L.capS);p(20,11,8,3,hair);p(20,10,8,1,L.capS);p(11,16,3,6,hair);p(34,16,3,6,hair);p(23,4,2,1,L.capS);p(16,7,6,1,shade(L.cap,25));}
+      if(L.capFront){E(24,12,13,8,L.capFront,3,15);E(24,16,16,3,L.capS,15,19);p(11,19,3,5,hair);p(34,19,3,5,hair);}
+    } else {
+      E(24,20,11,13,ss);E(24,19,11,12,sk);E(12,21,2,3,sk);E(36,21,2,3,sk);
+      if(L.beard==='long'){p(10,24,3,11,bd);p(35,24,3,11,bd);}else if(L.beard&&L.beard!=='mustache'){p(11,24,2,6,bd);p(35,24,2,6,bd);}
+      const hs=(L.cap||L.capFront)?'capped':L.hairStyle;
+      if(hs==='wavy'){E(24,17,13,15,hair,2,31);p(15,30,18,2,hair);p(17,6,10,1,hH);p(28,10,5,1,hH);p(14,14,4,1,hH);}
+      if(hs==='long'){E(24,17,12,14,hair,3,30);p(21,28,6,14,hair);p(22,42,4,3,hair);p(21,29,6,2,'#5a3a2a');p(19,8,8,1,hH);p(23,32,1,8,hH);}
+      if(hs==='short'){E(24,16,12,13,hair,3,28);p(18,7,9,1,hH);}
+      if(hs==='bun'){E(24,17,12,14,hair,3,30);E(24,8,6,5,hD);}
+      if(hs==='bald'){E(24,25,12,6,hair,22,30);}
+      if(hs==='scarf'){E(24,17,14,15,hair,1,33);p(20,30,8,6,hH);}
+      if(L.cap){E(24,17,12,12,hair,8,27);E(24,12,13,8,L.cap,3,16);E(24,17,11,4,L.capS,16,21);p(23,4,2,1,L.capS);p(16,7,6,1,shade(L.cap,25));}
+      if(L.capFront){E(24,17,12,12,hair,8,27);E(24,12,13,8,L.capFront,3,16);}
+    }
+    if(L.scarf){p(13,31,22,5,L.scarf);p(13,35,22,1,L.scarfS);if(!back){E(29,36,4,3,L.scarfS);p(27,38,5,9,L.scarf);p(27,46,5,1,L.scarfS);p(28,39,1,7,L.scarfS);}else p(15,36,5,9,L.scarf);}
+  });
+}
+const BUST={},BUSTB={};for(const k of['yvain','guilhem','nicodeme'])BUST[k]=makeBust(LOOKS[k],false),BUSTB[k]=makeBust(LOOKS[k],true);
+const SHADOWBUST=(()=>{const b=makeBust({...LOOKS.patrick,capFront:null,beard:'trim',hairStyle:'short'},false);const[c,x]=mk(b.width,b.height);x.drawImage(b,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#1a0f2a';x.fillRect(0,0,c.width,c.height);x.globalCompositeOperation='source-over';x.fillStyle='#ff3b3b';x.fillRect(18,19,4,2);x.fillRect(28,19,4,2);return c;})();
+
+/* enemy sprites */
+function rot(fn,w,h){const[c,x]=mk(w,h);x.save();fn(x);x.restore();x.setTransform(1,0,0,1,0,0);harden(c);return c;}
+const FOESPR={
+ stylo:(()=>{const c=rot(x=>{x.translate(25,25);x.rotate(-.72);x.fillStyle='#2f62c8';x.fillRect(-8,-24,16,34);x.fillStyle='#4f88ea';x.fillRect(-8,-24,5,34);x.fillStyle='#1d3d8a';x.fillRect(-9,-27,18,8);x.fillStyle='#c9ced8';x.fillRect(5,-24,3,16);x.fillStyle='#d8d8e2';x.beginPath();x.moveTo(-8,10);x.lineTo(8,10);x.lineTo(0,24);x.closePath();x.fill();x.fillStyle='#1e1e2a';x.fillRect(-1,16,2,8);},50,50);
+   const x=c.getContext('2d');const P=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);};P(14,18,5,5,'#fff');P(21,13,5,5,'#fff');P(16,20,2,2,EYE);P(23,15,2,2,EYE);P(13,16,6,1,EYE);P(21,11,6,1,EYE);P(21,25,6,2,MD);P(40,38,2,3,'#2f62c8');P(44,32,2,2,'#2f62c8');outline(c,'#1a1830');return c;})(),
+ copeau:(()=>{const c=rot(x=>{x.lineCap='round';const path=()=>{x.beginPath();for(let a=0;a<Math.PI*3.1;a+=.08){const r=2+a*1.9,px=25+Math.cos(a)*r,py=27+Math.sin(a)*r*.82;a===0?x.moveTo(px,py):x.lineTo(px,py);}};x.strokeStyle='#d9a55f';x.lineWidth=8;path();x.stroke();x.strokeStyle='#efc685';x.lineWidth=3;path();x.stroke();},50,50);
+   const x=c.getContext('2d');const P=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);};P(17,22,6,6,'#fff');P(28,22,6,6,'#fff');P(19,24,3,3,EYE);P(29,24,3,3,EYE);P(16,20,7,2,'#5a3412');P(28,20,7,2,'#5a3412');P(21,31,9,2,'#5a3412');P(20,33,2,1,'#5a3412');P(29,33,2,1,'#5a3412');outline(c,'#4a2a10');return c;})(),
+ gobelin:sprite(48,48,(x,p)=>{const E=(a,b,c,d,col,y0,y1)=>ellp(x,a,b,c,d,col,y0,y1);p(17,40,5,7,'#3d6a2c');p(27,40,5,7,'#3d6a2c');E(24,33,11,10,'#5a9a40');E(23,32,10,9,'#6cb04e');p(13,31,4,8,'#6cb04e');p(32,30,4,8,'#5a9a40');E(24,19,10,9,'#6cb04e');E(25,20,9,8,'#7cc05a');
+   for(let i=0;i<6;i++){p(13-i,15+i,2,2,'#6cb04e');p(35+i,15+i,2,2,'#5a9a40');}
+   p(18,17,4,4,'#f5e05a');p(27,17,4,4,'#f5e05a');p(19,18,2,2,EYE);p(28,18,2,2,EYE);p(17,15,6,1,'#2d4a20');p(26,15,6,1,'#2d4a20');p(23,21,3,3,'#5a9a40');p(19,25,11,2,MD);p(20,25,2,2,'#fff');p(27,25,2,2,'#fff');
+   p(31,10,3,32,'#c99a5b');p(26,10,13,3,'#c99a5b');p(31,10,1,32,'#e3b878');p(30,12,8,2,'#f2c14e');p(37,12,1,2,'#333');
+   p(20,30,8,8,'#e9e2d0');p(21,31,6,1,'#7a8aa8');p(21,33,6,1,'#7a8aa8');p(21,35,4,1,'#7a8aa8');},'#1d2a18'),
+ arbre:(()=>{const c=rot(x=>{x.translate(32,64);x.rotate(.17);x.fillStyle='#6e4426';x.fillRect(-9,-36,18,36);x.fillStyle='#8a5a34';x.fillRect(-9,-36,6,36);x.fillStyle='#5a361d';x.fillRect(2,-30,2,22);x.fillRect(-4,-16,2,12);x.fillRect(-12,-4,24,4);
+   const cir=(a,b,r,col)=>{x.fillStyle=col;x.beginPath();x.arc(a,b,r,0,7);x.fill();};cir(0,-44,18,'#2c6e36');cir(-14,-36,12,'#2c6e36');cir(14,-36,12,'#24602f');cir(-4,-48,13,'#3f9448');cir(-10,-40,7,'#4ea852');cir(-6,-52,5,'#62bb5c');},66,66);
+   const x=c.getContext('2d');const P=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);};P(33,40,5,3,'#1e0f05');P(41,41,5,3,'#1e0f05');P(34,41,2,1,'#f2c14e');P(43,42,2,1,'#f2c14e');P(32,38,6,1,'#1e0f05');P(41,38,6,2,'#1e0f05');P(34,48,10,4,'#1e0f05');P(35,48,2,1,'#e8e2c8');P(41,48,2,1,'#e8e2c8');outline(c,'#16240f');return c;})()
+};
+FOESPR.rival=BUST.yvain;
+FOESPR.echardillon=(()=>{const c=rot(x=>{x.translate(25,26);x.rotate(.5);x.fillStyle='#d8b070';x.beginPath();x.moveTo(-6,-22);x.lineTo(6,-20);x.lineTo(3,20);x.lineTo(0,26);x.lineTo(-3,20);x.closePath();x.fill();x.fillStyle='#b08850';x.fillRect(-2,-18,1,34);x.fillRect(2,-12,1,22);x.fillStyle='#e8c890';x.fillRect(-4,-20,2,10);},50,50);
+  const x=c.getContext('2d');const P=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);};P(21,17,4,4,'#ffffff');P(28,20,4,4,'#ffffff');P(22,18,2,2,EYE);P(29,21,2,2,EYE);P(20,15,5,1,'#5a3412');P(28,18,5,1,'#5a3412');P(23,27,6,1,'#5a3412');outline(c,'#4a2a10');return c;})();
+FOESPR.casier=sprite(48,48,(x,p)=>{p(10,3,28,43,'#4a6a8a');p(12,5,24,39,'#6a8aaa');p(12,5,3,39,'#7a9aba');for(const y of[9,12,15])p(16,y,16,1,'#2a3a4a');p(18,12,4,2,'#ffffff');p(26,12,4,2,'#ffffff');p(19,12,2,2,EYE);p(27,12,2,2,EYE);p(17,10,6,1,'#1a2a3a');p(25,10,6,1,'#1a2a3a');
+  p(14,28,20,4,'#1a1a2a');for(let i=15;i<33;i+=3)p(i,28,2,2,'#ffffff');p(32,20,2,6,'#c0c0c8');p(20,37,8,4,'#e8e0c8');p(22,38,4,1,'#5a5a6a');p(9,45,30,2,'#2a3a4a');},'#141c26');
+
+FOESPR.murene=(()=>{const c=rot(x=>{ellp(x,14,42,14,7,'#5a5a68');ellp(x,13,41,12,5,'#7a7a88');x.lineCap='round';x.strokeStyle='#4a7a2a';x.lineWidth=10;x.beginPath();x.moveTo(16,40);x.quadraticCurveTo(10,18,30,14);x.quadraticCurveTo(40,12,40,22);x.stroke();x.strokeStyle='#6a9a3a';x.lineWidth=4;x.beginPath();x.moveTo(14,38);x.quadraticCurveTo(9,20,29,15);x.stroke();},50,50);
+  const x=c.getContext('2d');const P=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);};P(37,16,5,4,'#ffe060');P(39,17,2,2,EYE);P(36,14,7,1,'#1a3a10');P(39,24,7,4,'#3a1a1a');P(39,24,1,1,'#fff');P(41,24,1,1,'#fff');P(43,24,1,1,'#fff');P(45,24,1,1,'#fff');P(20,30,2,2,'#2a5a1a');P(24,21,2,2,'#2a5a1a');outline(c,'#102010');return c;})();
+FOESPR.rouleau=sprite(48,48,(x,p)=>{ellp(x,24,32,23,15,'#2a6ab8');ellp(x,24,31,21,13,'#3a8ad8');ellp(x,32,26,11,9,'#9fd4f8');ellp(x,34,28,6,5,'#3a8ad8');ellp(x,20,16,15,5,'#ffffff');for(const[a,b]of[[8,12],[30,11],[36,14],[12,20]])p(a,b,3,2,'#ffffff');p(8,30,5,5,'#ffffff');p(16,30,5,5,'#ffffff');p(10,32,2,2,EYE);p(18,32,2,2,EYE);p(7,28,6,1,'#123a6a');p(15,28,6,1,'#123a6a');p(10,39,10,2,'#123a6a');},'#0e2a4e');
+FOESPR.dimanche=sprite(48,48,(x,p)=>{ellp(x,20,24,18,18,'#5a4a8a');ellp(x,18,24,16,16,'#6a5aa0');x.globalCompositeOperation='destination-out';ellp(x,31,19,14,15,'#000');x.globalCompositeOperation='source-over';
+  p(8,20,4,3,'#ffe060');p(9,21,2,2,EYE);p(7,18,6,1,'#2a1a4a');p(8,32,7,2,'#2a1a4a');p(7,31,1,1,'#2a1a4a');p(15,31,1,1,'#2a1a4a');p(28,26,17,20,'#f4f0e4');p(28,26,17,5,'#c0392b');p(30,33,13,1,'#888888');p(30,36,13,1,'#888888');p(30,39,9,1,'#888888');p(31,27,2,3,'#ffffff');p(40,27,2,3,'#ffffff');},'#1a1030');
+
+FOESPR.paperasse=sprite(48,48,(x,p)=>{for(let i=0;i<7;i++){const y=40-i*5,o=((i*7)%5)-2;p(10+o,y,28,5,i%2?'#f4efe0':'#e8e0cc');p(12+o,y+2,20,1,'#b8b0a0');}p(8,43,32,4,'#d8d0bc');
+  p(16,14,6,5,'#ffffff');p(26,14,6,5,'#ffffff');p(18,16,2,3,EYE);p(28,16,2,3,EYE);p(15,12,7,1,EYE);p(26,12,7,1,EYE);p(19,23,10,2,MD);
+  p(39,20,6,6,'#7a4a28');p(40,16,4,4,'#5a3a20');p(37,26,10,3,'#c0392b');p(1,26,7,9,'#f4efe0');p(2,28,5,1,'#b8b0a0');p(2,31,4,2,'#c0392b');},'#3a3428');
+FOESPR.renouee=sprite(48,48,(x,p)=>{for(const[sx,hh]of[[12,30],[20,38],[28,34],[36,26]]){p(sx,47-hh,2,hh,'#b0406a');for(let k=0;k<4;k++){const ly=47-hh+4+k*8,lx=sx+(k%2?6:-4);ellp(x,lx,ly,5,3,'#4a9a3a');ellp(x,lx,ly-1,3,2,'#6cc050');}}
+  ellp(x,24,16,9,8,'#5aaa44');p(18,13,4,4,'#ffffff');p(26,13,4,4,'#ffffff');p(19,14,2,2,EYE);p(27,14,2,2,EYE);p(17,11,5,1,'#1d3a18');p(26,11,5,1,'#1d3a18');p(20,20,8,2,MD);
+  p(17,4,14,4,'#f2c14e');p(17,1,2,3,'#f2c14e');p(23,0,2,4,'#f2c14e');p(29,1,2,3,'#f2c14e');p(23,5,2,2,'#c0392b');},'#1d3a18');
+FOESPR.jury=sprite(48,48,(x,p)=>{[[9,'#e8e8e8','bald'],[24,'#6a4a2a','bun'],[39,'#3a3a3a','short']].forEach(([cx,hc,st],i)=>{p(cx-6,25,12,8,i===1?'#5a2a3a':'#2a2a3a');ellp(x,cx,18,6,7,'#f0c8a4');if(st==='bald'){p(cx-6,16,2,4,hc);p(cx+4,16,2,4,hc);}else ellp(x,cx,12,6,3,hc);if(st==='bun')ellp(x,cx,7,3,2,hc);p(cx-3,17,2,2,EYE);p(cx+1,17,2,2,EYE);p(cx-4,16,8,1,FR);p(cx-2,22,4,1,MD);});
+  p(0,32,48,14,'#7a4a28');p(0,32,48,2,'#9a6a40');p(18,35,12,8,'#f4efe0');p(20,37,8,1,'#b0a890');p(20,39,6,1,'#c0392b');},'#1a1410');
+FOESPR.baron=(()=>{const b=makeBust(LOOKS.baron,false);const[c,x]=mk(b.width,b.height);x.drawImage(b,0,0);const P=(a,y,w,h,col)=>{x.fillStyle=col;x.fillRect(a,y,w,h);};ellp(x,42,30,6,8,'#1f1a2e');ellp(x,42,30,5,7,'#f2c14e');ellp(x,42,30,3,5,'#bfe4f8');P(41,27,1,3,'#ffffff');P(41,38,3,8,'#c08a10');P(40,45,5,3,'#f0c8a4');return c;})();
+FOESPR.comte=(()=>{const b=makeBust(LOOKS.comte,false);const[c,x]=mk(b.width,b.height);x.drawImage(b,0,0);const P=(a,y,w,h,col)=>{x.fillStyle=col;x.fillRect(a,y,w,h);};P(4,36,4,12,'#5a1a2a');P(40,36,4,12,'#5a1a2a');ellp(x,25,42,6,6,'#3a2a12');ellp(x,25,42,5,5,'#f0e4b0');P(25,38,1,4,'#2a1a08');P(25,42,3,1,'#c0392b');P(24,35,3,2,'#c08a10');P(19,19,3,2,'#ff3b3b');P(29,19,3,2,'#ff3b3b');return c;})();
+
+
+/* ================= TILES ================= */
+const GR='#7fcb5a',GRD='#5fae45',GRL='#a2de7a';
+function tileC(fn){const[c,x]=mk(16,16);const p=(a,b,w,h,col)=>{x.fillStyle=col;x.fillRect(a,b,w,h);};fn(x,p);return c;}
+function grassBase(x,p,s){p(0,0,16,16,GR);const r=rng(s);for(let i=0;i<3;i++){const a=1+(r()*12|0),b=2+(r()*11|0);p(a,b,1,1,GRD);p(a+1,b+1,1,1,GRD);p(a+2,b,1,1,GRD);p(a+1,b,1,1,GRL);}}
+const TREE=sprite(16,16,(x,p)=>{ellp(x,8,6,7,6,'#2f7a3d');ellp(x,7,5,6,5,'#3f9448');ellp(x,5,3,3,2,'#5bb35a');ellp(x,9,9,6,2,'#2a6a36');p(7,12,2,4,'#6e4524');p(7,12,1,4,'#8a5a34');},'#1b3a24');
+const TILES={};
+function buildTiles(){
+  TILES['.']=[0,1,2].map(s=>tileC((x,p)=>grassBase(x,p,s*7+3)));
+  TILES[',']=[0,1].map(s=>tileC((x,p)=>{grassBase(x,p,s+20);const fl=(a,b,c)=>{p(a,b-1,1,1,c);p(a-1,b,1,1,c);p(a+1,b,1,1,c);p(a,b+1,1,1,c);p(a,b,1,1,'#f8e060');};fl(4,4,s?'#ffffff':'#f06a6a');fl(11,11,s?'#f06a9a':'#ffffff');fl(12,3,'#8fb0f0');}));
+  TILES['"']=[tileC((x,p)=>{p(0,0,16,16,'#4c9a3a');for(const[by,off]of[[1,0],[8,2]])for(let bx=off-4;bx<16;bx+=4){p(bx+1,by+1,2,6,'#8fd86a');p(bx,by+3,1,4,'#6fc050');p(bx+3,by+2,1,5,'#6fc050');p(bx+1,by,1,1,'#2e6a2a');p(bx+2,by+1,1,1,'#2e6a2a');p(bx,by+2,1,1,'#2e6a2a');p(bx+3,by+1,1,1,'#2e6a2a');}})];
+  TILES['=']=[0,1].map(s=>tileC((x,p)=>{p(0,0,16,16,'#dcc48c');const r=rng(40+s);for(let i=0;i<5;i++){const a=r()*15|0,b=r()*15|0;p(a,b,2,1,'#c4a871');p(a,b+1,1,1,'#ead9a8');}}));
+  TILES.s=[tileC((x,p)=>{p(0,0,16,16,'#efd99b');const r=rng(77);for(let i=0;i<6;i++){const a=r()*15|0,b=r()*15|0;p(a,b,1,1,'#d8bf7c');p(a+1,b,1,1,'#f8eabb');}})];
+  TILES['~']=[0,1].map(f=>tileC((x,p)=>{p(0,0,16,16,'#4c8fd6');for(let i=0;i<4;i++){const y=1+i*4,xx=((i*5)+f*3)%16;p(xx,y,4,1,'#86bdf0');p((xx+9)%16,y+2,2,1,'#3b76ba');}}));
+  TILES.T=[0,1,2].map(s=>tileC((x,p)=>{grassBase(x,p,s+11);x.drawImage(TREE,-1,-1);}));
+  TILES.b=[tileC((x,p)=>{grassBase(x,p,50);ellp(x,8,10,6,5,'#2f7a3d');ellp(x,7,9,5,4,'#45a04c');p(5,7,2,1,'#6cc060');})];
+  TILES.r=[tileC((x,p)=>{grassBase(x,p,51);ellp(x,8,10,7,5,'#6b6b78');ellp(x,7,9,6,4,'#8e8e9c');p(4,7,4,1,'#b4b4c2');})];
+  TILES.f=[tileC((x,p)=>{grassBase(x,p,52);p(0,6,16,2,'#c8a070');p(0,10,16,2,'#c8a070');p(2,4,3,10,'#a87e50');p(11,4,3,10,'#a87e50');p(2,4,3,1,'#e0bc88');p(11,4,3,1,'#e0bc88');})];
+  TILES['#']=[0,1].map(f=>tileC((x,p)=>{x.drawImage(TILES['~'][f],0,0);p(0,2,16,12,'#b5835a');for(let i=0;i<16;i+=4)p(i,2,1,12,'#8a5e3a');p(0,1,16,2,'#6e4528');p(0,13,16,2,'#6e4528');}));
+  TILES.c=[tileC((x,p)=>{grassBase(x,p,53);ellp(x,8,9,7,5,'#555360');ellp(x,8,9,5,3,'#3a3236');p(3,8,10,2,'#7a4a28');p(7,5,2,8,'#8a5a34');p(6,8,4,2,'#2a2228');p(5,4,1,1,'#9a9aa8');p(11,12,1,1,'#9a9aa8');})];
+  TILES.X=[tileC((x,p)=>p(0,0,16,16,'#1d1826'))];
+  // interior
+  const floor=(x,p,s=0)=>{p(0,0,16,16,'#d8a86a');for(let y=0;y<16;y+=4){p(0,y+3,16,1,'#b8864e');p(((y*3+s*5)%13)+1,y,1,3,'#c49058');}};
+  TILES._=[0,1].map(s=>tileC((x,p)=>floor(x,p,s)));
+  TILES.r=TILES.r;
+  TILES.rug=[tileC((x,p)=>{floor(x,p);p(0,1,16,14,'#b5443a');p(0,3,16,1,'#e8c070');p(0,12,16,1,'#e8c070');for(let i=2;i<16;i+=5)p(i,6,2,4,'#e8c070');})];
+  TILES.m=[tileC((x,p)=>{floor(x,p);p(2,3,12,10,'#5d7a3a');p(3,4,10,8,'#7a9a4a');p(4,12,8,1,'#3d5a2a');})];
+  TILES.W=[tileC((x,p)=>{p(0,0,16,16,'#e8d8b8');for(let i=1;i<16;i+=5)p(i,0,2,16,'#ddc8a0');})];
+  TILES.Wb=[tileC((x,p)=>{p(0,0,16,16,'#e8d8b8');for(let i=1;i<16;i+=5)p(i,0,2,16,'#ddc8a0');p(0,12,16,4,'#8a6040');p(0,12,16,1,'#a87a54');})];
+  TILES.O=[tileC((x,p)=>{x.drawImage(TILES.Wb[0],0,0);p(2,1,12,10,'#ffffff');p(3,2,10,8,'#9fd0f0');p(3,7,10,3,'#b8e0f8');p(7,2,1,8,'#ffffff');p(3,5,10,1,'#ffffff');p(1,10,14,2,'#c8a070');})];
+  TILES.P=[tileC((x,p)=>{x.drawImage(TILES.Wb[0],0,0);p(3,2,10,8,'#7a4a28');p(4,3,8,6,'#9fd0f0');p(4,6,8,3,'#5f9a50');p(6,4,3,3,'#f8f0c8');})];
+  TILES.R=[tileC((x,p)=>{x.drawImage(TILES.Wb[0],0,0);p(1,2,14,9,'#8a6040');p(2,3,12,7,'#a87a54');p(3,4,1,5,'#c0c0cc');p(3,4,3,1,'#5a3a20');p(8,3,1,6,'#5a3a20');p(7,3,3,2,'#9aa0aa');p(11,4,2,5,'#d8d8e0');})];
+  TILES.D=[tileC((x,p)=>{x.drawImage(TILES.Wb[0],0,0);p(2,1,12,15,'#5a3a20');p(3,2,10,14,'#7a4a28');p(4,3,8,5,'#8a5a34');p(4,9,8,6,'#8a5a34');p(11,9,1,2,'#f2c14e');})];
+  TILES.B=[tileC((x,p)=>{floor(x,p);p(1,1,14,15,'#7a4a28');p(2,2,12,7,'#ffffff');p(3,3,10,5,'#eef0f8');p(2,9,12,7,'#4a78c0');})];
+  TILES.bb=[tileC((x,p)=>{floor(x,p);p(1,0,14,14,'#7a4a28');p(2,0,12,12,'#4a78c0');p(2,4,12,1,'#3a62a6');p(2,8,12,1,'#3a62a6');p(1,13,14,2,'#5a3a20');})];
+  TILES.S=[tileC((x,p)=>{floor(x,p);p(1,0,14,16,'#7a4a28');p(2,1,12,4,'#5a3a20');p(2,6,12,4,'#5a3a20');p(2,11,12,4,'#5a3a20');const cols=['#c0392b','#2f6fb0','#3f9448','#e0a030','#8a4ab0'];for(let i=0;i<5;i++){p(2+i*2,1,2,4,cols[i]);p(3+i*2,6,1,4,cols[(i+2)%5]);p(2+i*2,11,2,4,cols[(i+4)%5]);}})];
+  TILES.v=[tileC((x,p)=>{floor(x,p);p(1,9,14,6,'#7a4a28');p(2,1,12,9,'#2a2a34');p(3,2,10,6,'#3a7ac8');p(4,3,3,2,'#9fd0f0');p(5,11,6,2,'#d8d8e0');p(6,11,1,1,'#c0392b');p(9,11,1,1,'#2f6fb0');})];
+  TILES.k=[tileC((x,p)=>{floor(x,p);p(0,0,16,15,'#9aa0aa');p(0,0,16,3,'#c8ccd4');p(3,5,4,3,'#3a3a44');p(9,5,4,3,'#3a3a44');p(0,14,16,2,'#6a707a');p(4,9,8,4,'#c0392b');})];
+  TILES.t=[tileC((x,p)=>{floor(x,p);p(0,3,16,8,'#a06a3a');p(0,3,16,2,'#c08a54');p(1,11,2,4,'#7a4a28');p(13,11,2,4,'#7a4a28');p(5,4,4,2,'#ffffff');p(10,5,2,2,'#e0a030');})];
+  TILES.u=[tileC((x,p)=>{floor(x,p);p(1,3,15,12,'#f4f4f8');p(3,5,13,8,'#8fc8f0');p(4,6,4,1,'#c8e8ff');p(2,4,2,1,'#c0c0cc');})];
+  TILES.U=[tileC((x,p)=>{floor(x,p);p(0,3,15,12,'#f4f4f8');p(0,5,13,8,'#8fc8f0');p(6,7,4,1,'#c8e8ff');p(11,2,2,3,'#c0c0cc');})];
+  TILES.p=[tileC((x,p)=>{floor(x,p);p(4,10,8,5,'#b5643a');p(4,10,8,1,'#d07a4a');ellp(x,8,6,6,5,'#3f9448');ellp(x,7,5,4,3,'#5bb35a');})];
+  TILES.l=[tileC((x,p)=>{floor(x,p);for(let i=0;i<4;i++){p(0,2+i*3,16,3,i%2?'#c89a5a':'#d8aa6a');p(0,4+i*3,16,1,'#8a6040');}p(13,2,2,12,'#e8c890');})];
+  TILES.w=[tileC((x,p)=>{floor(x,p);p(0,4,16,5,'#c08a54');p(0,4,16,1,'#e0aa70');p(1,9,2,6,'#7a4a28');p(5,6,6,1,'#8a6040');p(9,2,3,3,'#7a7a88');})];
+  TILES.x=[tileC((x,p)=>{floor(x,p);p(0,4,16,5,'#c08a54');p(0,4,16,1,'#e0aa70');p(13,9,2,6,'#7a4a28');p(3,3,7,2,'#d8d8e0');p(3,3,2,2,'#5a3a20');})];
+}
+buildTiles();
+const PINE=sprite(16,16,(x,p)=>{p(7,13,2,3,'#6e4524');for(let i=0;i<4;i++){const w=2+i*2;p(8-w,1+i*3,w*2,4,i%2?'#2a6a3a':'#327a44');}p(7,0,2,2,'#327a44');p(6,4,1,1,'#5aa860');p(4,8,1,1,'#5aa860');},'#163222');
+function snowBase(x,p,s){p(0,0,16,16,'#eef2f8');const r=rng(s);for(let i=0;i<4;i++){const a=r()*15|0,b=r()*15|0;p(a,b,2,1,'#d4dcea');p(a+1,b+1,1,1,'#ffffff');}}
+TILES.n=[0,1].map(s=>tileC((x,p)=>snowBase(x,p,90+s)));
+TILES.pine=[0,1].map(s=>tileC((x,p)=>{grassBase(x,p,60+s);x.drawImage(PINE,-1,-1);}));
+TILES.Y=[0,1].map(s=>tileC((x,p)=>{snowBase(x,p,70+s);x.drawImage(PINE,-1,-1);p(4,3,3,1,'#ffffff');p(9,6,3,1,'#ffffff');}));
+TILES.krock=[tileC((x,p)=>{snowBase(x,p,80);ellp(x,8,10,7,5,'#6b6b78');ellp(x,7,9,6,4,'#8e8e9c');p(4,6,6,2,'#ffffff');})];
+TILES.F=[tileC((x,p)=>{x.drawImage(TILES.Wb[0],0,0);p(0,1,16,15,'#6a6a78');p(1,2,14,13,'#8e8e9c');p(3,6,10,10,'#2a1a14');p(4,10,8,5,'#e0602a');p(5,9,6,3,'#f2a030');p(6,8,4,2,'#f8d860');p(0,1,16,2,'#4a4a56');})];
+
+const SPR={
+ sign:sprite(14,14,(x,p)=>{p(6,8,2,6,'#7a4a28');p(0,1,14,8,'#c89a5a');p(1,2,12,6,'#ddb070');p(2,3,9,1,'#7a5a3a');p(2,5,7,1,'#7a5a3a');},'#3a2414'),
+ flower:sprite(10,12,(x,p)=>{p(4,6,2,6,'#3f9448');p(1,8,3,2,'#5bb35a');p(6,9,3,2,'#5bb35a');p(3,0,4,2,'#d070e0');p(1,2,8,3,'#d070e0');p(3,5,4,1,'#b050c0');p(4,2,2,2,'#fff4a0');},'#3a1a40'),
+ castle:sprite(16,17,(x,p)=>{x.translate(0,3);const S='#e8cf8a',D2='#c9ac64';p(1,6,14,8,S);p(1,13,14,1,D2);p(0,2,4,6,S);p(12,2,4,6,S);p(6,0,4,8,S);for(const a of[0,2,12,14,6,8])p(a,a===6||a===8?-1:1,1,1,S);p(7,10,2,4,'#7a5a3a');p(2,4,1,1,D2);p(13,4,1,1,D2);p(7,3,2,1,D2);p(7,-3,1,3,'#7a4a28');p(8,-3,3,2,'#c0392b');},'#8a6a34'),
+ copeau:sprite(12,10,(x,p)=>{x.strokeStyle='#f2c14e';x.lineWidth=3;x.beginPath();for(let a=0;a<Math.PI*2.4;a+=.15){const r=1+a*1.3,px=6+Math.cos(a)*r,py=5+Math.sin(a)*r*.75;a===0?x.moveTo(px,py):x.lineTo(px,py);}x.stroke();p(5,4,2,1,'#fff6c0');},'#6a4a10')
+};
+
+const PALM=sprite(16,16,(x,p)=>{p(7,6,2,10,'#8a6a3a');p(8,8,1,1,'#6a4a2a');p(8,12,1,1,'#6a4a2a');ellp(x,8,4,8,3,'#2a8a3a');ellp(x,4,6,4,2,'#3a9a4a');ellp(x,12,6,4,2,'#3a9a4a');p(7,3,3,2,'#6a4a2a');},'#123a1a');
+TILES.L=[tileC((x,p)=>{x.drawImage(TILES.s[0],0,0);x.drawImage(PALM,-1,-1);})];
+SPR.algues=sprite(16,10,(x,p)=>{ellp(x,8,7,8,3,'#3a6a2a');ellp(x,6,5,5,3,'#4a8a3a');ellp(x,11,5,4,2,'#5a7a2a');p(3,2,2,3,'#6aa04a');p(11,1,2,3,'#6aa04a');p(7,3,1,2,'#8a6a3a');},'#1a2a10');
+SPR.triton=sprite(12,6,(x,p)=>{p(0,1,3,3,'#3a3a2a');p(2,2,8,2,'#3a3a2a');p(9,3,3,1,'#3a3a2a');p(3,4,5,1,'#f08a20');p(3,1,6,1,'#2a2a1a');p(3,5,1,1,'#3a3a2a');p(7,5,1,1,'#3a3a2a');p(0,1,1,1,'#f2c14e');},'#14140c');
+SPR.orvet=sprite(14,5,(x,p)=>{p(0,2,4,2,'#b08a4a');p(3,1,4,2,'#b08a4a');p(6,2,4,2,'#b08a4a');p(9,1,5,2,'#c89a5a');p(12,1,1,1,EYE);},'#4a3414');
+SPR.castor=sprite(12,10,(x,p)=>{p(3,3,6,7,'#8a5a34');p(4,1,4,2,'#c89a5a');p(5,0,2,1,'#c89a5a');p(4,4,1,5,'#6e4524');p(0,8,2,1,'#d8b070');p(10,9,2,1,'#d8b070');p(9,6,2,1,'#d8b070');},'#3a2414');
+/* ================= GAME DATA ================= */
+const HEROES={
+ guilhem:{first:'Guilhem',name:'Guilhem Silendart',real:'Guillaume',cls:'Rôdeur-Artisan',el:'Précision et savoir',quote:'« Je viens ce soir… enfin non. »',base:{hp:44,atk:12,def:12,spd:10},grow:{hp:5,atk:2,def:2,spd:1},moves:['fleche','these','patience','cesoir'],
+   send:'Guilhem entre en scène. « Je viens ce soir… enfin non, j\'arrive maintenant ! »'},
+ nicodeme:{first:'Nicodème',name:'Nicodème Nothus',real:'Nicolas',cls:'Barde Sylvestre',el:'Nature et musique',quote:'« C\'est pas faux. »',base:{hp:40,atk:11,def:11,spd:13},grow:{hp:4,atk:2,def:1,spd:2},moves:['accord','inventaire','ballade','pasfaux'],
+   send:'Nicodème accorde son luth. « À mon tour. C\'est pas faux. »'},
+ yvain:{first:'Yvain',name:'Yvain Gauvinette',real:'Yves',cls:'Chevalier des Flots',el:'Artisanat, eau et force',quote:'« J\'y vais ! »',base:{hp:48,atk:14,def:10,spd:11},grow:{hp:6,atk:2,def:1,spd:1},moves:['jyvais','rabot','charge','maitrise'],
+   send:'« J\'y vais ! » Yvain fonce dans la bataille.'}
+};
+const TAGN={precision:'la précision',savoir:'le savoir',nature:'la nature',eau:"l'eau",force:'la force',artisanat:"l'artisanat"};
+const ELN={precision:'Précision',savoir:'Savoir',nature:'Nature',eau:'Eau',force:'Force',artisanat:'Artisanat'};
+const MOVES={
+ fleche:{n:'Flèche de Chêne',k:'dmg',pow:45,acc:100,tag:'precision',d:'Une flèche taillée main. Précise et patiente.'},
+ these:{n:'Thèse Foudroyante',k:'dmg',pow:75,acc:80,tag:'savoir',d:'330 pages de références s\'abattent sur l\'ennemi.'},
+ patience:{n:"Patience d'Ébéniste",k:'heal',pct:.35,self:{def:1},d:'Ponce ses pensées. Soigne et augmente la DÉF.'},
+ cesoir:{n:'Je viens ce soir…',k:'stun',chance:.65,foe:{atk:-1},d:'…enfin non. L\'ennemi, désemparé, peut perdre son tour.'},
+ accord:{n:'Accord Élémentaire',k:'dmg',pow:60,acc:95,tag:'nature',d:'Un accord autodidacte qui fait trembler la terre.'},
+ inventaire:{n:'Inventaire Naturaliste',k:'focus',d:'Recense l\'ennemi comme un triton rare. La prochaine attaque sera critique.'},
+ ballade:{n:'Ballade des Fougères',k:'heal',pct:.45,d:'Une mélodie qui apaise. Soigne Nicodème.'},
+ pasfaux:{n:"C'est pas faux",k:'confuse',d:'L\'ennemi ne sait plus s\'il a raison. Il peut se blesser.'},
+ jyvais:{n:"J'y vais !",k:'dmg',pow:45,acc:100,tag:'force',prio:1,d:'Frappe toujours en premier. Réfléchir viendra après.'},
+ rabot:{n:'Rabot des Flots',k:'dmg',pow:65,acc:95,tag:['artisanat','eau'],d:'Un coup de rabot porté par une vague. Redoutable contre le bois.'},
+ charge:{n:'Charge Inconsciente',k:'dmg',pow:100,acc:80,tag:'force',recoil:.25,d:'Très puissant, mais Yvain se blesse au passage.'},
+ maitrise:{n:'Maîtrise Fédérale',k:'buff',self:{atk:2},d:'Brandit son diplôme fédéral. L\'ATT augmente fortement.'},
+ projectile:{n:"Projectile d'Atelier",k:'dmg',pow:40,acc:95},
+ pate:{n:"Pâté d'Encre",k:'dmg',pow:30,acc:100,foe:{def:-1}},
+ echarde:{n:'Écharde',k:'dmg',pow:40,acc:100},
+ sciure:{n:'Tourbillon de Sciure',k:'dmg',pow:35,acc:95,foe:{atk:-1}},
+ cotation:{n:'Cotation Absurde',k:'dmg',pow:45,acc:90},
+ echelle:{n:'Échelle 1:1000',k:'debuff',foe:{atk:-1}},
+ chute:{n:'Chute Imprévisible',k:'dmg',pow:70,acc:70},
+ racine:{n:'Racine Sournoise',k:'dmg',pow:45,acc:100},
+ grincement:{n:'Grincement Sinistre',k:'debuff',foe:{def:-1}},
+ jyvaisR:{n:"J'y vais !",k:'dmg',pow:35,acc:100,prio:1},
+ rabotR:{n:'Rabot des Flots',k:'dmg',pow:45,acc:95},
+ maitriseR:{n:'Échauffement',k:'buff',self:{atk:1}},
+ formulaire:{n:'Formulaire en Triple Exemplaire',k:'dmg',pow:50,acc:95},
+ tampon:{n:'Coup de Tampon',k:'dmg',pow:40,acc:100,foe:{def:-1}},
+ relance:{n:'Relance Administrative',k:'stun',chance:.4,msg:'reçoit une relance urgente. Il risque de perdre son tour !'},
+ rhizome:{n:'Rhizome Sournois',k:'dmg',pow:50,acc:95},
+ invasion:{n:'Invasion',k:'heal',pct:.2,msg:'La Reine Renouée colonise un nouveau coin du marais !'},
+ ombrage:{n:'Ombrage',k:'debuff',foe:{atk:-1}},
+ question:{n:'Question Piège',k:'dmg',pow:50,acc:95},
+ regard:{n:'Regard Sévère',k:'debuff',foe:{def:-1}},
+ note:{n:'Note Éliminatoire',k:'dmg',pow:70,acc:80},
+ jemenoccupe:{n:"Je m'en occupe",k:'nothing',msg:'… et ne fait strictement rien.'},
+ cestnote:{n:"C'est noté",k:'nothing',msg:'Rien n\'est noté. Nulle part.'},
+ promis:{n:'Promis, demain',k:'nothing',msg:'Demain n\'arrive jamais.'},
+ regardez:{n:'Regardez-Moi',k:'debuff',foe:{atk:-1},msg:'Le Baron parle de lui pendant dix minutes. Tout le monde perd sa motivation.'},
+ merite:{n:"C'est Grâce à Moi",k:'heal',pct:.2,msg:'Le Baron s\'attribue vos exploits et se sent revigoré !'},
+ miroir:{n:'Éclat de Miroir',k:'dmg',pow:45,acc:90},
+ reunion:{n:'Réunion Inutile',k:'dmg',pow:50,acc:100},
+ deadline:{n:'Deadline Fatale',k:'dmg',pow:75,acc:80},
+ urgence:{n:'Urgence Permanente',k:'debuff',foe:{def:-1}},
+ agenda:{n:'Agenda Surchargé',k:'stun',chance:.6,msg:'reçoit un mail urgent. Il risque de ne pas pouvoir agir !'},
+ piqure:{n:'Piqûre Sournoise',k:'dmg',pow:40,acc:100},
+ ongle:{n:'Sous l\'Ongle',k:'dmg',pow:30,acc:95,foe:{atk:-1}},
+ rangement:{n:'Rangement Forcé',k:'stun',chance:.45,msg:'se retrouve enfermé dans le casier ! Il risque de perdre son tour.'},
+ claque:{n:'Claque de Porte',k:'dmg',pow:45,acc:95},
+ expertise:{n:'Expertise de Master',k:'focus',master:true,d:'Master en biologie oblige : analyse complète. Prochaine attaque critique et DÉF ennemie en baisse.'},
+ lecon:{n:'Leçon du CEPV',k:'teach',d:'180 heures de formation pédagogique : toute l\'équipe gagne en ATT et en DÉF.'},
+ mention:{n:'Mention Très Honorable',k:'dmg',pow:90,acc:90,tag:'savoir',d:'La foudre académique ultime. Débloquée avec le Sceau du Temps.'},
+ ronces:{n:'Fouet de Ronces',k:'dmg',pow:80,acc:95,tag:'nature',flinch:.3,d:'Les ronces, sa spécialité. Peut entraver l\'ennemi.'},
+ coupmaitre:{n:'Coup de Maître',k:'dmg',pow:95,acc:90,tag:'artisanat',d:'Le geste parfait du Maître Fédéral.'},
+ morsure:{n:'Morsure du Récif',k:'dmg',pow:50,acc:95},
+ grotte:{n:'Repli dans la Grotte',k:'buff',self:{def:1}},
+ courant:{n:'Courant Froid',k:'dmg',pow:40,acc:100,foe:{atk:-1}},
+ vague:{n:'Vague Scélérate',k:'dmg',pow:55,acc:95},
+ ecume:{n:'Écume',k:'debuff',foe:{def:-1}},
+ machine:{n:'Machine à Laver',k:'dmg',pow:70,acc:80},
+ lundi:{n:'Angoisse du Lundi',k:'dmg',pow:60,acc:95},
+ bouchons:{n:'Bouchons du Retour',k:'dmg',pow:50,acc:100,foe:{def:-1}},
+ valises:{n:'Valises à Faire',k:'debuff',foe:{atk:-1},msg:'Il faut plier les serviettes, retrouver une chaussette, vider le frigo…'},
+ reveil:{n:'Réveil à 6 h',k:'stun',chance:.5,msg:'entend déjà le réveil du lundi. Il risque de ne pas pouvoir agir !'},
+ ensG:{n:'Ce soir, je viens !',k:'ensemble',line:'« Ce soir, je viens. Et cette fois… pour de vrai ! » Guilhem a enfin dit oui, sans « enfin non ».',d:'Pour une fois, sans « enfin non ». Les trois doivent s\'y mettre.'},
+ ensN:{n:'Accord des Retrouvailles',k:'ensemble',line:'Nicodème joue l\'accord des retrouvailles. C\'est pas faux : ça fait du bien.',d:'Un accord qui rassemble. Les trois doivent s\'y mettre.'},
+ ensY:{n:'On y va ensemble !',k:'ensemble',line:'« Pour une fois, je n\'y vais pas seul. On y va ensemble ! »',d:'Yvain attend les autres. Les trois doivent s\'y mettre.'}
+};
+const FOES={
+ stylo:{n:'Stylo Furieux',hp:24,atk:11,def:9,spd:12,moves:['projectile','pate'],el:'Encre',weak:['eau','artisanat'],res:[],why:{eau:'L\'encre se dilue !',artisanat:'Un coup de rabot, et le voilà taillé !'},xp:16,env:'forest',desc:'Lancé un jour à travers un meuble en construction, il n\'a jamais pardonné.'},
+ copeau:{n:'Copeau Grognon',hp:28,atk:10,def:11,spd:9,moves:['echarde','sciure'],el:'Bois',weak:['artisanat','force'],res:['eau'],why:{artisanat:'Un artisan sait parler au bois !',force:'Le copeau s\'éparpille !',eau:'Le bois gonfle… mais encaisse.'},xp:16,desc:'Il ronchonne depuis qu\'on l\'a raboté contre le fil.'},
+ gobelin:{n:'Gobelin du Dessin Technique',hp:30,atk:12,def:10,spd:10,moves:['cotation','echelle'],el:'Papier',weak:['savoir','eau'],res:['force'],why:{savoir:'Le savoir corrige toutes ses cotes !',eau:'Ses plans prennent l\'eau !',force:'Il protège ses plans avec son équerre…'},xp:20,desc:'Il hante les cours de dessin technique et confisque les consoles.'},
+ arbre:{n:"L'Arbre-qui-Tombe",hp:100,atk:14,def:13,spd:7,moves:['chute','racine','grincement'],el:'Bois',weak:['artisanat','force'],res:['eau','nature'],why:{artisanat:'Un ébéniste connaît chaque nœud du bois !',force:'Le tronc vacille !',eau:'L\'arbre adore l\'eau…',nature:'L\'arbre se sent dans son élément…'},xp:70},
+ rival:{n:'Yvain',hp:34,atk:11,def:10,spd:11,moves:['jyvaisR','rabotR','maitriseR'],el:'Eau',weak:[],res:[],why:{},xp:30},
+ paperasse:{n:'Paperasse Infinie',hp:72,atk:13,def:12,spd:9,moves:['formulaire','tampon','relance'],el:'Papier',weak:['savoir','eau'],res:['force'],why:{savoir:'Le savoir remplit chaque formulaire !',eau:'L\'encre des formulaires coule !',force:'On ne frappe pas un formulaire. Il faut le remplir…'},xp:50},
+ renouee:{n:'Reine Renouée',hp:80,atk:13,def:12,spd:8,moves:['rhizome','invasion','ombrage'],el:'Plante invasive',weak:['nature','savoir'],res:['artisanat','eau'],why:{nature:'La flore indigène reprend ses droits !',savoir:'Connaître l\'espèce, c\'est savoir où frapper !',artisanat:'Coupée, la renouée repousse de plus belle…',eau:'La renouée adore l\'eau…'},xp:50},
+ jury:{n:'Jury Fédéral',hp:82,atk:13,def:13,spd:9,moves:['question','regard','note'],el:'Examen',weak:['artisanat','savoir'],res:['force'],why:{artisanat:'Le jury admire le travail bien fait !',savoir:'Réponse parfaite !',force:'Le jury n\'aime pas qu\'on fonce sans réfléchir…'},xp:50},
+ baron:{n:'Baron du Miroir',hp:90,atk:12,def:11,spd:12,moves:['jemenoccupe','cestnote','promis','regardez','merite','miroir'],el:'Ego',weak:['savoir','precision'],res:[],why:{savoir:'La vérité blesse son ego !',precision:'Touché en plein dans l\'amour-propre !'},xp:60},
+ comte:{n:'Comte Chronophage',hp:150,atk:16,def:14,spd:10,moves:['reunion','deadline','urgence','agenda'],el:'Temps',weak:['precision'],res:[],why:{precision:'La ponctualité, son pire ennemi !'},xp:100},
+ echardillon:{n:'Échardillon',hp:22,atk:12,def:8,spd:14,moves:['piqure','ongle'],el:'Bois',weak:['precision','artisanat'],res:['eau'],why:{precision:'Extraite avec une précision d\'horloger !',artisanat:'Retiré dans le sens du fil !',eau:'Mouillée, l\'écharde s\'enfonce encore plus…'},xp:16,desc:'Il se loge sous les ongles des apprentis depuis la nuit des temps.'},
+ casier:{n:'Danslecasier',hp:32,atk:11,def:13,spd:7,moves:['rangement','claque'],el:'Métal',weak:['force','eau'],res:['artisanat','precision'],why:{force:'La porte du casier s\'enfonce !',eau:'Le métal rouille à vue d\'œil !',artisanat:'La lame s\'émousse sur le métal…',precision:'La flèche rebondit sur la tôle…'},xp:18,desc:'Personne ne sait ce qu\'il y a dedans. Personne ne veut savoir.'},
+ murene:{n:'Murène Grincheuse',hp:80,atk:13,def:13,spd:10,moves:['morsure','grotte','courant'],el:'Eau',weak:['force'],res:['eau'],why:{force:'La murène recule dans sa grotte !',eau:'Elle est chez elle, dans l\'eau…'},xp:50},
+ rouleau:{n:'Grand Rouleau',hp:95,atk:14,def:12,spd:9,moves:['vague','ecume','machine'],el:'Eau',weak:['precision','savoir'],res:['force','eau'],why:{precision:'Le bon timing pour passer la vague !',savoir:'Lire la vague, c\'est déjà la dompter !',force:'On ne frappe pas une vague…',eau:'Ajouter de l\'eau à une vague…'},xp:60},
+ dimanche:{n:'Dimanche Soir',hp:130,atk:15,def:14,spd:9,moves:['lundi','bouchons','valises','reveil'],el:'Temps',weak:['precision','nature','eau'],res:['force'],why:{precision:'Profiter de chaque minute !',nature:'Une balade au coucher du soleil, ça repousse le dimanche soir !',eau:'Une dernière baignade !',force:'On ne force pas le temps…'},xp:80}
+};
+const ITEMS={sandwich:{n:'Sandwich de Maman',heal:30,use:'mange le sandwich',d:'Rend 30 PV à un héros.'},kombucha:{n:'Kombucha d\'Yvain',heal:50,use:'boit la kombucha (courageusement)',d:'Fait maison. Le goût est… audacieux. Rend 50 PV.'},cafe:{n:'Café Serré',heal:80,revive:true,use:'boit le café',d:'Rend 80 PV. Réveille même un héros K.O.'}};
+const ACH={
+ patrick:{n:'Vous êtes qui ?',d:'Parler trois fois au Concierge.'},
+ baignoire:{n:'La Baignoire',d:'Se réveiller dans la baignoire.'},
+ gn:{n:'Trésor du GN',d:'Déterrer le trésor sous le feu de camp.'},
+ console:{n:'Dessin Technique',d:'Jouer à la console au lieu de partir.'},
+ irma:{n:'Destin Scellé',d:'Consulter Madame Irma.'},
+ balcon:{n:'Observateurs',d:'Visiter la Maison du Balcon.'},
+ copeaux:{n:'Collectionneur',d:'Trouver les 5 Copeaux d\'Or.'}
+};
+const ENS={guilhem:'ensG',nicodeme:'ensN',yvain:'ensY'};
+const L2={guilhem:'mention',nicodeme:'ronces',yvain:'coupmaitre'};
+const EVO={nicodeme:['inventaire','expertise','Fort de son master en biologie, Nicodème perfectionne sa méthode : Inventaire Naturaliste devient Expertise de Master !'],yvain:['maitrise','lecon','Après la maîtrise, 180 heures de formation pédagogique pour enseigner au CEPV : Maîtrise Fédérale devient Leçon du CEPV !']};
+function evolve(id){const e=EVO[id];if(!e)return false;const h=G.heroes[id],i=h.moves.indexOf(e[0]);if(i<0)return false;h.moves[i]=e[1];return true;}
+function learnL2(id){const h=G.heroes[id];if(!h.moves.includes(L2[id]))h.moves.push(L2[id]);}
+const xpNeed=l=>l*10;
+let G=null;
+function makeHero(id,lvl=5){const h={id,first:HEROES[id].first,n:HEROES[id].first,lvl,xp:0,moves:HEROES[id].moves.slice(),st:{atk:0,def:0},conf:0,stun:false};calcStats(h,true);return h;}
+function calcStats(h,full){const d=HEROES[h.id],L=h.lvl-5,old=h.maxhp||0;h.maxhp=d.base.hp+L*d.grow.hp;h.atk=d.base.atk+L*d.grow.atk;h.def=d.base.def+L*d.grow.def;h.spd=d.base.spd+L*d.grow.spd;if(full||!old)h.hp=h.maxhp;else if(h.hp>0)h.hp=Math.min(h.maxhp,h.hp+h.maxhp-old);}
+function newGame(id){G={hero:id,party:[id],heroes:{},flags:{},bag:{sandwich:0,kombucha:0,cafe:0},flowers:{},copeaux:{},ach:{},patrick:0,since:0,start:Date.now(),ch:1};for(const k in HEROES)G.heroes[k]=makeHero(k);buildMaps();}
+function newGame2(id){newGame(id);G.ch=2;G.party=[id,...['yvain','guilhem','nicodeme'].filter(k=>k!==id)];for(const k of G.party){const h=G.heroes[k];h.lvl=8;h.xp=0;calcStats(h,true);}G.bag={sandwich:3,kombucha:2,cafe:1};}
+const SK=c=>'mouskito-save-ch'+c;
+function saveGame(){if(!G||(G.ch!==2&&G.ch!==3))return;try{const P=WORLD.player;localStorage.setItem(SK(G.ch),JSON.stringify({G,map:WORLD.map.id,x:P.x,y:P.y,dir:P.dir}));showToast('Partie sauvegardée');}catch(e){}}
+function loadSave(c=2){try{const v=localStorage.getItem(SK(c));return v?JSON.parse(v):null;}catch(e){return null;}}
+function clearSave(c=2){try{localStorage.removeItem(SK(c));}catch(e){}}
+function getDone(){try{return JSON.parse(localStorage.getItem('mouskito-done')||'[]');}catch(e){return[];}}
+function markDone(n){try{const d=getDone();if(!d.includes(n))d.push(n);localStorage.setItem('mouskito-done',JSON.stringify(d));}catch(e){}}
+const H=()=>HEROES[G.hero].first;
+const inParty=id=>G.party.includes(id);
+function healAll(){for(const id of G.party){const h=G.heroes[id];h.hp=h.maxhp;}}
+function unlock(k){if(G.ach[k])return;G.ach[k]=true;showToast('Succès débloqué : '+ACH[k].n);SFX.level();}
+let TOAST=null;function showToast(t){TOAST={t,n:170};}
+
+/* ================= MAPS ================= */
+const MAPS={};
+function grid(w,h,ch){return[...Array(h)].map(()=>Array(w).fill(ch));}
+function buildMaps(){
+  // ---------- VEVEY ----------
+  const w=44,h=32,t=grid(w,h,'.');
+  const R=(x,y,ww,hh,c)=>{for(let j=y;j<y+hh;j++)for(let i=x;i<x+ww;i++)if(i>=0&&j>=0&&i<w&&j<h)t[j][i]=c;};
+  const r=rng(7);
+  R(0,0,w,1,'T');R(0,0,1,24,'T');R(w-1,0,1,24,'T');
+  for(let j=1;j<22;j++)for(let i=31;i<43;i++)if(r()<.32)t[j][i]='T';
+  R(31,1,12,5,'.');R(31,6,6,2,'T');R(38,6,5,2,'T');
+  R(31,12,10,1,'=');R(37,5,1,8,'=');R(32,13,10,7,'"');R(36,8,3,3,'"');
+  R(39,15,3,3,'.');t[16][40]='c';R(40,20,2,2,'.');t[12][41]='r';t[12][42]='T';t[11][40]='.';t[11][31]='.';t[11][32]='.';t[13][31]='.';
+  R(0,24,w,8,'~');R(1,22,28,2,'s');R(31,22,12,2,'s');R(29,0,2,24,'~');t[12][29]='#';t[12][30]='#';
+  R(5,7,22,1,'=');R(26,7,1,6,'=');R(26,12,3,1,'=');for(const[x,y]of[[5,6],[11,6],[21,6]])t[y][x]='=';
+  R(10,10,7,5,'=');R(13,8,1,2,'=');R(14,15,1,7,'=');
+  for(let j=15;j<21;j++)for(let i=2;i<11;i++)if(r()<.22)t[j][i]=',';
+  for(const[x,y]of[[1,14],[2,14],[3,14],[4,14],[8,14],[9,14],[10,14],[11,14],[11,15],[11,16],[11,18],[11,19],[11,20],[11,21],[1,21],[2,21],[9,21],[10,21],[17,2],[18,2],[9,2],[9,3],[15,3],[16,3],[25,9],[25,10],[20,17],[21,17],[24,16],[18,19],[27,20],[1,1],[2,1],[27,1],[28,1],[28,2]])t[y][x]='T';
+  for(const[x,y]of[[3,6],[7,6],[10,6],[13,6],[18,6],[24,6],[17,9],[9,12],[17,14],[6,10],[19,11]])t[y][x]='b';
+  for(const[x,y]of[[2,6],[8,5],[19,8],[22,9],[16,16],[17,17],[22,14],[23,14],[26,15],[3,12],[4,12],[6,12],[12,20],[13,19],[20,20],[25,18]])if(t[y][x]==='.')t[y][x]=',';
+  for(const[x,y]of[[2,9],[10,20],[2,23],[6,17],[14,22],[23,8],[17,12],[20,13],[9,9],[26,2],[25,23],[28,11],[27,11]])t[y][x]=t[y][x]==='s'?'s':(t[y][x]==='='?'=':'.');
+  t[21][41]='.';
+  MAPS.town={id:'town',name:'VEVEY',w,h,t,enc:true,env:'forest',solid:'T~frbcX',
+    buildings:[{x:3,y:2,w:5,h:4,door:5,roof:'#c0503a',wall:'#f1e4c8'},{x:10,y:2,w:4,h:4,door:11,roof:'#5a7ab0',wall:'#efe0d0',balcony:true},{x:19,y:2,w:6,h:4,door:21,roof:'#7a5a9a',wall:'#e8e4d8',icon:'book'},{x:34,y:1,w:7,h:4,door:37,roof:'#8a5a34',wall:'#e8d4b0',icon:'saw'}],
+    warps:[{x:5,y:5,to:'home',tx:7,ty:8,dir:1},{x:37,y:4,to:'atelier',tx:7,ty:8,dir:1}],
+    triggers:[{x:37,y:8,fn:()=>bossAct(objById('boss'))}],
+    tileAct:{c:gnAct},fountain:{x:12,y:11},
+    objs:[
+      {id:'patrick',x:29,y:12,kind:'npc',look:'patrick',dir:2,act:talkPatrick},
+      {id:'irma',x:17,y:12,kind:'npc',look:'irma',dir:2,act:talkIrma},
+      {id:'kid',x:9,y:9,kind:'npc',look:'kid',dir:0,act:async()=>{await say('Le Concierge, sur le pont, ne laisse passer personne tout seul. Il pose toujours la même question. Toujours.','Enfant');await say('Moi, quand je serai grand, je serai concierge. Avec une machine à souffler les feuilles.','Enfant');}},
+      {id:'emeric',x:16,y:22,kind:'npc',look:'emeric',dir:2,act:talkEmeric},
+      {id:'castle',x:20,y:22,kind:'prop',spr:'castle',act:castleAct},
+      {id:'mamie',x:20,y:13,kind:'npc',look:'mamie',dir:2,act:talkMamie},
+      {id:'npc_guilhem',x:23,y:8,kind:'npc',look:'guilhem',dir:0,cond:()=>!inParty('guilhem'),act:questGuilhem},
+      {id:'npc_nicodeme',x:6,y:17,kind:'npc',look:'nicodeme',dir:0,cond:()=>!inParty('nicodeme'),act:questNico},
+      {id:'npc_yvain',x:14,y:22,kind:'npc',look:'yvain',dir:0,cond:()=>!inParty('yvain'),act:questYvain},
+      {id:'f1',x:2,y:9,kind:'item',spr:'flower',cond:()=>G.hero!=='nicodeme'&&!G.flowers.f1&&!inParty('nicodeme'),act:()=>pickFlower('f1')},
+      {id:'f2',x:25,y:23,kind:'item',spr:'flower',cond:()=>G.hero!=='nicodeme'&&!G.flowers.f2&&!inParty('nicodeme'),act:()=>pickFlower('f2')},
+      {id:'f3',x:26,y:2,kind:'item',spr:'flower',cond:()=>G.hero!=='nicodeme'&&!G.flowers.f3&&!inParty('nicodeme'),act:()=>pickFlower('f3')},
+      {id:'c2',x:10,y:20,kind:'item',spr:'copeau',cond:()=>!G.copeaux.c2,act:()=>pickCopeau('c2')},
+      {id:'c3',x:2,y:23,kind:'item',spr:'copeau',cond:()=>!G.copeaux.c3,act:()=>pickCopeau('c3')},
+      {id:'c4',x:41,y:21,kind:'item',spr:'copeau',cond:()=>!G.copeaux.c4,act:()=>pickCopeau('c4')},
+      {id:'s1',x:7,y:8,kind:'sign',act:()=>say('VEVEY. La plus belle ville du monde. (Signé : Yvain.)')},
+      {id:'s2',x:27,y:11,kind:'sign',act:()=>say('PONT DES APPRENTIS. Gardé par le Concierge. Personne ne sait depuis quand. Ni pourquoi.')},
+      {id:'s3',x:32,y:11,kind:'sign',act:()=>say('FORÊT DES COPEAUX. Attention : chutes d\'arbres fréquentes. Et parfois volontaires.')},
+      {id:'s4',x:40,y:11,kind:'sign',act:()=>say('LE MONT-PÈLERIN et le chalet de la famille de Nicodème, par le sentier de montagne. Fermé jusqu\'au Chapitre II. (Pensez à prendre un sac de couchage.)')},
+      {id:'s5',x:8,y:6,kind:'sign',act:()=>say(`MAISON DE ${H().toUpperCase()}. Ici dort un futur héros. Pour l'instant, surtout, il dort.`)},
+      {id:'fountain',x:12,y:11,kind:'deco',tiles:[[12,11],[13,11],[12,12],[13,12]],act:fountainAct},
+      {id:'d_balcon',x:11,y:5,kind:'deco',act:balconAct},
+      {id:'d_lib',x:21,y:5,kind:'deco',act:()=>say('BIBLIOTHÈQUE DES SAGES. Fermée pour cause d\'inventaire. Réouverture prévue au Chapitre II.')},
+      {id:'boss',x:37,y:7,kind:'boss',cond:()=>!G.flags.boss,act:o=>bossAct(o)}
+    ]};
+  // ---------- MAISON ----------
+  const homeRows=['WWWWWWWWWWWWWWW','WWOWWPWWWWWWOWW','_BS__v____kk_uU','_b_____________','_______________','_____ttt_______','____rrrrr______','_p__rrrrr____p_','_______________','XXXXXXXmXXXXXXX'];
+  MAPS.home={id:'home',name:'MAISON',interior:true,w:15,h:10,t:homeRows.map(s=>s.split('')),enc:false,solid:'WOPBbSvkuUtpXlwxRD',
+    warps:[{x:7,y:9,to:'town',tx:5,ty:6,dir:0}],
+    triggers:[{x:7,y:8,fn:async()=>{if(G.flags.sandwich)return;const m=objById('maman');m.emote='!';SFX.blip();await wait(30);m.emote=null;await say('Attends ! Ne pars pas le ventre vide !','Maman');await giveSandwich();}}],
+    tileAct:{v:consoleAct,u:tubAct,U:tubAct,S:shelfAct,B:bedAct,b:bedAct,k:()=>say('Ça sent bon la soupe. Maman cuisine toujours pour un régiment.'),t:()=>say('La table de la cuisine. Quelqu\'un y a gravé un petit copeau. C\'est peut-être toi.'),p:plantAct,O:()=>say('Par la fenêtre, on aperçoit le lac et les montagnes. Une journée parfaite pour devenir une légende.'),P:()=>say('Un tableau du Lavaux. Les vignes descendent jusqu\'au lac.')},
+    objs:[{id:'maman',x:11,y:4,kind:'npc',look:'maman',dir:0,act:talkMaman}]};
+  // ---------- ATELIER ----------
+  const atRows=['WWWWWWWWWWWWWWW','WRRWWWWDWWWWRRW','ll_____________','ll__wx_____wx__','_______________','___wx_______ll_','_______________','_p___________p_','_______________','XXXXXXXmXXXXXXX'];
+  MAPS.atelier={id:'atelier',name:'ATELIER DU MAÎTRE RABOTIN',interior:true,w:15,h:10,t:atRows.map(s=>s.split('')),enc:false,solid:'WOPBbSvkuUtpXlwxRD',
+    warps:[{x:7,y:9,to:'town',tx:37,ty:5,dir:0}],onEnter:()=>{if(!G.flags.final)return finalScene();},
+    tileAct:{l:()=>say('Du chêne, du hêtre, du noyer. Ça sent bon le travail bien fait.'),w:benchAct,x:benchAct,R:()=>say('Des outils parfaitement alignés. Le Maître Rabotin ne plaisante pas avec le rangement.'),D:()=>say('La salle d\'entretien. Derrière cette porte, votre destin.'),p:()=>say('Une plante en pot, couverte de sciure. Elle a l\'air heureuse.')},
+    objs:[{id:'maitre',x:7,y:2,kind:'npc',look:'maitre',dir:0,cond:()=>!!G.flags.maitreOut,act:()=>say('Bienvenue à l\'atelier, apprentis !','Maître Rabotin')},
+          {id:'varlope',x:11,y:4,kind:'npc',look:'varlope',dir:2,cond:()=>!!G.flags.maitreOut,act:()=>say('Rabotin m\'a tout raconté. Il me raconte toujours tout.','Maître Varlope')},
+          {id:'patrick2',x:7,y:8,kind:'npc',look:'patrick',dir:1,cond:()=>!!G.flags.patrickAtelier,act:()=>say('Vous êtes qui ?','Le Concierge')}]};
+  buildHauts();buildChalet();buildMer();buildMilan();
+  for(const k in MAPS){const m=MAPS[k];m.objs.forEach(o=>{o.px=o.x*16;o.py=o.y*16;o.moving=false;o.stepN=0;o.prog=0;o.fx=o.x;o.fy=o.y;});prerender(m);}
+}
+function buildHauts(){
+  const w=40,h=30,t=grid(w,h,'.');const R=(x,y,ww,hh,c)=>{for(let j=y;j<y+hh;j++)for(let i=x;i<x+ww;i++)if(i>=0&&j>=0&&i<w&&j<h)t[j][i]=c;};const r=rng(21);
+  R(1,1,38,12,'n');for(let j=1;j<12;j++)for(let i=1;i<39;i++)if(r()<.2)t[j][i]=r()<.5?'k':'Y';
+  R(13,1,14,7,'n');R(1,9,38,1,'k');R(17,10,5,2,'n');R(19,6,1,6,'=');R(0,12,w,1,'P');t[12][19]='=';
+  for(let j=13;j<29;j++)for(let i=1;i<39;i++)if(r()<.07)t[j][i]=r()<.5?'P':'T';
+  R(24,13,15,15,'.');R(28,23,4,3,'~');R(33,18,3,2,'~');R(25,15,3,2,'~');R(30,13,8,4,'"');R(34,21,4,5,'"');R(24,25,3,3,'"');
+  for(let j=13;j<29;j++)for(let i=24;i<39;i++)if(t[j][i]==='.'&&r()<.12)t[j][i]=',';
+  R(1,13,17,5,'.');R(19,13,1,16,'=');R(4,20,32,1,'=');R(5,18,1,2,'=');R(13,18,1,2,'=');
+  for(const[x,y]of[[4,19],[14,19],[16,21],[26,21],[27,21],[18,10],[20,10],[29,22],[36,24],[27,17],[35,15],[18,26],[20,13],[23,19],[8,21],[18,27],[20,27]])if(t[y][x]!=='"')t[y][x]='.';
+  t[10][18]='n';t[10][20]='n';
+  R(0,0,w,1,'Y');R(0,0,1,13,'Y');R(w-1,0,1,13,'Y');R(0,13,1,h-13,'P');R(w-1,13,1,h-13,'P');R(0,h-1,w,1,'P');
+  MAPS.hauts={id:'hauts',name:'LE MONT-PÈLERIN',w,h,t,enc:true,solid:'TP~rkYXcbf',
+    buildings:[{x:2,y:14,w:7,h:4,door:5,roof:'#7a5a9a',wall:'#e8e4d8',icon:'book'},{x:10,y:14,w:6,h:4,door:13,roof:'#8a5a34',wall:'#e8d4b0',icon:'saw'},{x:16,y:2,w:7,h:4,door:19,roof:'#5a3a20',wall:'#b07a44'},{x:24,y:3,w:3,h:3,door:25,roof:'#4a2a18',wall:'#9a6a3a'}],
+    warps:[{x:19,y:5,to:'chalet',tx:7,ty:8,dir:1}],
+    objs:[
+      {id:'capite',x:25,y:5,kind:'deco',act:capiteAct},
+      {id:'moine',x:21,y:20,kind:'npc',look:'moine',dir:3,patrol:[[30,20],[21,20]],act:moineAct},
+      {id:'gate',x:19,y:12,kind:'gate',cond:()=>!G.flags.gate,act:gateAct},
+      {id:'baron',x:19,y:9,kind:'npc',look:'baron',dir:0,cond:()=>!G.flags.baron,act:baronAct},
+      {id:'mel2',x:18,y:10,kind:'npc',look:'melisande',dir:3,cond:()=>!!G.flags.baronTalk,act:()=>say('Le Baron ? On le connaît. Il a promis d\'aider la Guilde il y a trois ans. On attend toujours.','Mélisande')},
+      {id:'lae2',x:20,y:10,kind:'npc',look:'laetitia',dir:2,cond:()=>!!G.flags.baronTalk,act:()=>say('Montez. Le Chalet vous attend. Nous, on a un inventaire à finir.','Lætitia')},
+      {id:'paperasse',x:5,y:18,kind:'boss2',spr:'paperasse',cond:()=>!G.flags.sealG,act:paperasseAct},
+      {id:'jury',x:13,y:18,kind:'boss2',spr:'jury',cond:()=>!G.flags.sealY,act:juryAct},
+      {id:'renouee',x:35,y:15,kind:'boss2',spr:'renouee',cond:()=>!G.flags.sealN,act:renoueeAct},
+      {id:'mel',x:26,y:21,kind:'npc',look:'melisande',dir:0,cond:()=>!G.flags.baronTalk,act:guildeAct},
+      {id:'lae',x:27,y:21,kind:'npc',look:'laetitia',dir:0,cond:()=>!G.flags.baronTalk,act:guildeAct},
+      {id:'pere',x:14,y:19,kind:'npc',look:'pereG',dir:2,act:pereAct},
+      {id:'emeric2',x:16,y:21,kind:'npc',look:'emeric',dir:0,act:emeric2Act},
+      {id:'sp1',x:29,y:22,kind:'item',spr:'triton',cond:()=>!!G.flags.guilde&&!G.flags.sp1,act:()=>pickSpecies('sp1')},
+      {id:'sp2',x:36,y:24,kind:'item',spr:'orvet',cond:()=>!!G.flags.guilde&&!G.flags.sp2,act:()=>pickSpecies('sp2')},
+      {id:'sp3',x:27,y:17,kind:'item',spr:'castor',cond:()=>!!G.flags.guilde&&!G.flags.sp3,act:()=>pickSpecies('sp3')},
+      {id:'h1',x:18,y:26,kind:'sign',act:()=>say('LE MONT-PÈLERIN, au-dessus de Vevey. Altitude : élevée. Réseau : faible. Excuses : interdites.')},
+      {id:'h2',x:20,y:13,kind:'sign',act:()=>say('SENTIER DU CHALET. Fermé par ordre du Comte Chronophage. Motif : « Vous avez sûrement mieux à faire. »')},
+      {id:'h3',x:23,y:19,kind:'sign',act:()=>say('MARAIS DU JORAT. Zone protégée. Inventaire en cours par la Guilde du Viréo.')},
+      {id:'h4',x:8,y:21,kind:'sign',act:()=>say('ACADÉMIE DE LÉMANIE ↑  ·  ATELIER GAUVINETTE ↑')},
+      {id:'acad',x:5,y:17,kind:'deco',act:()=>say('L\'Académie de Lémanie. Fermée le week-end. Comme par hasard, le seul moment où l\'on aurait le temps.')},
+      {id:'atg',x:13,y:17,kind:'deco',act:()=>say('L\'Atelier Gauvinette. Sur la porte : « Agrandissement prévu : aile ouest, donjon, cathédrale. Signé : Yvain. »')}
+    ]};}
+function buildChalet(){const rows=['WWWWWWWWWWWWWWW','WWOWWWFFWWWWOWW','_B__________SS_','_b____ttt______','______ttt______','_______________','___rrrrrrrrr___','_p___________v_','_______________','XXXXXXXmXXXXXXX'];
+  MAPS.chalet={id:'chalet',name:'LE CHALET DE NICODÈME',interior:true,w:15,h:10,t:rows.map(r=>r.split('')),enc:false,solid:'WOPBbSvkuUtpXlwxRDF',
+    warps:[{x:7,y:9,to:'hauts',tx:19,ty:6,dir:0}],onEnter:()=>{if(!G.flags.final2)return chaletScene();},
+    tileAct:{F:()=>say('Un bon feu de bois. Du hêtre, d\'après le crépitement.'),v:()=>say('Une console. On la garde pour après la victoire.'),S:()=>say('Des jeux de société, un vieux guide de plongée de la Mer Rouge et un carnet de terrain annoté.'),B:()=>say('Un lit superposé. Cette nuit, Nicodème et Yvain vont ronfler. En stéréo, comme pendant la semaine de surf.'),b:()=>say('Un lit superposé. Personne ne veut dormir sous celui qui ronfle. C\'est-à-dire sous les deux.'),t:()=>say('La fondue est prête. Enfin, elle le sera quand le Comte sera parti.'),p:()=>say('Une plante de montagne. Nicodème connaît sûrement son nom latin.'),O:()=>say('Dehors, la neige et les étoiles.')},
+    objs:[{id:'comte',x:7,y:8,kind:'npc',look:'comte',dir:1,cond:()=>!!G.flags.comteIn&&!G.flags.final2,act:()=>say('Je n\'ai pas le temps. Personne n\'a le temps.','Comte Chronophage')}]};}
+function buildMer(){const w=40,h=24,t=grid(w,h,'.');const R=(x,y,ww,hh,c)=>{for(let j=y;j<y+hh;j++)for(let i=x;i<x+ww;i++)if(i>=0&&j>=0&&i<w&&j<h)t[j][i]=c;};
+  R(0,0,w,1,'T');R(0,0,1,8,'T');R(w-1,0,1,8,'T');R(0,7,w,1,'=');R(0,8,w,8,'s');R(0,16,w,8,'~');R(0,8,1,8,'L');R(w-1,8,1,8,'L');
+  for(const[x,y]of[[2,8],[12,9],[27,8],[37,9],[15,14],[29,14],[2,14]])t[y][x]='L';for(const[x,y]of[[5,6],[19,6],[33,6]])t[y][x]='=';
+  for(const[x,y]of[[10,2],[11,3],[25,2],[27,4],[14,4],[1,3],[38,4]])t[y][x]='T';
+  MAPS.mer={id:'mer',name:'LES RIVAGES DU SUD',w,h,t,enc:false,solid:'TL~rX',
+    buildings:[{x:3,y:2,w:6,h:4,door:5,roof:'#2a7ab0',wall:'#f4f0e4'},{x:17,y:2,w:6,h:4,door:19,roof:'#c87a3a',wall:'#f0e0c0'},{x:31,y:2,w:6,h:4,door:33,roof:'#e0a030',wall:'#f4f0e4'}],
+    warps:[{x:19,y:5,to:'bungalow',tx:7,ty:8,dir:1}],
+    objs:[
+      {id:'eric',x:6,y:9,kind:'npc',look:'eric',dir:0,act:ericAct},
+      {id:'corail',x:8,y:9,kind:'npc',look:'corail',dir:0,act:corailAct},
+      {id:'monsieur',x:11,y:12,kind:'npc',look:'monsieur',dir:2,cond:()=>!G.flags.padi,act:monsieurAct},
+      {id:'rocco',x:32,y:9,kind:'npc',look:'rocco',dir:0,act:roccoAct},
+      {id:'rouleau',x:33,y:15,kind:'boss2',spr:'rouleau',cond:()=>!G.flags.surf,act:()=>say('Le Grand Rouleau gronde au large. Le moniteur de l\'école de surf saura comment l\'aborder.')},
+      {id:'algues',x:24,y:13,kind:'prop',spr:'algues',act:alguesAct},
+      {id:'m1',x:21,y:9,kind:'sign',act:()=>say('LES RIVAGES DU SUD. Plongée à gauche, surf à droite, bungalow au milieu. La géographie est approximative, les souvenirs sont exacts.')},
+      {id:'d_dive',x:5,y:5,kind:'deco',act:()=>say('Le centre de plongée de la Mer Rouge. Une affiche : « Brevet de plongée : le calme avant tout. »')},
+      {id:'d_surf',x:33,y:5,kind:'deco',act:()=>say('L\'école de surf. Une affiche : « Ici, on forme des champions. Et parfois des spaghettis. »')}
+    ]};
+  const brows=['WWWWWWWWWWWWWWW','WWOWWWWWWWWWOWW','_B___B___B_____','_b___b___b_____','_______________','_____ttt_______','___rrrrrrrrr___','_p___________S_','_______________','XXXXXXXmXXXXXXX'];
+  MAPS.bungalow={id:'bungalow',name:'LE BUNGALOW',interior:true,w:15,h:10,t:brows.map(r=>r.split('')),enc:false,solid:'WOPBbSvkuUtpXlwxRDF',
+    warps:[{x:7,y:9,to:'mer',tx:19,ty:6,dir:0}],onEnter:()=>{if(G.flags.padi&&G.flags.surf&&G.flags.algues&&!G.flags.final3)return nightScene();},
+    tileAct:{B:()=>say('Trois lits. Deux ronfleurs. Un seul Guilhem. Le calcul est vite fait.'),b:()=>say('Un lit de camp qui grince. Il a vu passer beaucoup de vacances.'),t:()=>say('Des cartes postales jamais envoyées et un tube de crème solaire vide.'),S:()=>say('Une étagère : un guide des poissons de la Mer Rouge, une planche de surf miniature et trois paires de tongs dépareillées.'),O:()=>say('Dehors, la mer et les étoiles.'),p:()=>say('Un cactus. Le seul habitant du bungalow qui ne ronfle pas.')},
+    objs:[{id:'dimanche',x:7,y:6,kind:'boss2',spr:'dimanche',cond:()=>!!G.flags.dimIn&&!G.flags.final3,act:()=>{}}]};}
+function buildMilan(){const rows=['WWWWWWWWWWWWWWW','WWOWWPWWWWPWWOW','_____kkkk______','_t_t_______t_t_','_______________','_t_t_______t_t_','_______tt______','_p___________p_','_______________','XXXXXXXmXXXXXXX'];
+  MAPS.milan={id:'milan',name:'LE MILAN',interior:true,w:15,h:10,t:rows.map(r=>r.split('')),enc:false,solid:'WOPBbSvkuUtpXlwxRDF',
+    triggers:[{x:7,y:9,fn:async()=>{await say('On ne part pas avant d\'avoir mangé ! Le serveur vous regarde, inquiet.');Object.assign(WORLD.player,{y:8,py:128,dir:1});}}],
+    tileAct:{t:(x,y)=>(y===6&&(x===7||x===8))?sitAct():say('Une table bien dressée. Ça sent le citron et le parmesan.'),k:()=>say('Le comptoir. Une bouteille d\'huile d\'olive y trône comme un trophée.'),P:()=>say('Une photo de la Tour de Pise, légèrement penchée. Comme il se doit.'),O:()=>say('Dehors, Vevey s\'endort doucement.'),p:()=>say('Un basilic en pot. Nicodème lui trouve fière allure.')},
+    objs:[
+      {id:'serveur',x:9,y:2,kind:'npc',look:'serveur',dir:0,act:serveurAct},
+      {id:'patM',x:2,y:3,kind:'npc',look:'patrick',dir:0,act:async()=>{SFX.blower();await say('Le Concierge souffle les miettes de sa table avec une toute petite machine. VRRR.');await say('Vous êtes qui ?','Le Concierge');await say('… Ah, les Mouskito. Prenez le tartare, il est bon ici.','Le Concierge');}},
+      {id:'rabM',x:1,y:4,kind:'npc',look:'maitre',dir:0,act:async()=>{await say('Varlope, regarde qui est là. Un docteur, un biologiste diplômé et un enseignant du CEPV. Nos trois apprentis !','Maître Rabotin');await say('Je sais. Tu m\'en parles depuis vingt minutes.','Maître Varlope');}},
+      {id:'varM',x:3,y:4,kind:'npc',look:'varlope',dir:0,act:()=>say('Rabotin m\'a dit que vous viendriez. Il me dit toujours tout.','Maître Varlope')},
+      {id:'irmM',x:12,y:3,kind:'npc',look:'irma',dir:0,act:()=>say('Je vois… un dessert. Et beaucoup d\'autres soirées comme celle-ci.','Madame Irma')},
+      {id:'mamM',x:11,y:4,kind:'npc',look:'mamie',dir:0,act:()=>say('Trois jeunes gens ensemble, encore ! J\'ai quatre-vingt-sept ans et je n\'ai jamais rien vu d\'aussi beau. Enfin, je crois.','Mamie Josette')},
+      {id:'emeM',x:13,y:4,kind:'npc',look:'emeric',dir:0,act:async()=>{await say('Yvain ! Après le repas, on sort avec la bande ?','Emeric');await say('J\'y vais ! … Après le dessert.','yvain');}},
+      {id:'melM',x:1,y:6,kind:'npc',look:'melisande',dir:1,act:()=>say('On fête la fin de l\'inventaire. Quatre cent douze espèces !','Mélisande')},
+      {id:'laeM',x:3,y:6,kind:'npc',look:'laetitia',dir:1,act:()=>say('Trois de plus que l\'an dernier. Trois, évidemment.','Lætitia')},
+      {id:'barM',x:12,y:5,kind:'npc',look:'baron',dir:0,act:async()=>{await say('Le Baron admire son reflet dans une cuillère.');await say('Ce restaurant a bon goût : il m\'a laissé entrer.','Baron du Miroir');}},
+      {id:'comM',x:13,y:6,kind:'npc',look:'comte',dir:2,act:comteMilanAct}
+    ]};}
+function objById(id){return WORLD.map.objs.find(o=>o.id===id);}
+function drawBuilding(x,b,f){
+  const P=(a,c,w,h,col)=>{x.fillStyle=col;x.fillRect(a,c,w,h);};
+  const X=b.x*16,Y=b.y*16,Wp=b.w*16,Hp=b.h*16,roofH=Math.floor(b.h/2)*16+4,wy=Y+roofH;
+  P(X+1,Y+roofH-4,Wp-2,Hp-roofH+4,'#2a2232');P(X+2,wy-3,Wp-4,Hp-roofH+2,b.wall);P(X+2,Y+Hp-3,Wp-4,2,shade(b.wall,-30));
+  for(let i=0;i<b.w;i++){const tx=X+i*16;if(b.x+i===b.door){P(tx+3,Y+Hp-14,10,13,'#2a1a10');P(tx+4,Y+Hp-13,8,12,'#7a4a28');P(tx+4,Y+Hp-13,8,1,'#9a6a40');P(tx+10,Y+Hp-8,1,2,'#f2c14e');P(tx+2,Y+Hp-1,12,1,'#a08a6a');continue;}
+    P(tx+3,wy+2,10,9,'#3a3a48');P(tx+4,wy+3,8,7,'#8fc4ec');P(tx+4,wy+6,8,1,'#ffffff');P(tx+7,wy+3,1,7,'#ffffff');P(tx+5,wy+4,2,1,'#d8f0ff');P(tx+3,wy+11,10,1,'#c89a5a');}
+  if(b.balcony){P(X+2,wy-1,Wp-4,1,'#6e4528');for(let i=X+3;i<X+Wp-2;i+=3)P(i,wy-1,1,5,'#6e4528');P(X+2,wy+4,Wp-4,1,'#6e4528');}
+  P(X,Y,Wp,roofH,shade(b.roof,-40));P(X+1,Y+1,Wp-2,roofH-2,b.roof);
+  for(let yy=Y+4;yy<Y+roofH-2;yy+=4){P(X+1,yy,Wp-2,1,shade(b.roof,-22));for(let xx=X+((yy/4)%2?3:7);xx<X+Wp-2;xx+=8)P(xx,yy-3,1,3,shade(b.roof,-14));}
+  P(X+1,Y+1,Wp-2,1,shade(b.roof,35));P(X,Y+roofH-2,Wp,2,shade(b.roof,-55));
+  P(X+Wp-14,Y-4,6,8,'#7a6a6a');P(X+Wp-15,Y-5,8,2,'#5a4a4a');
+  if(b.icon){const ix=(b.door)*16,iy=wy-1;P(ix+1,iy-6,14,8,'#5a3a20');P(ix+2,iy-5,12,6,'#c89a5a');
+    if(b.icon==='book'){P(ix+4,iy-4,8,4,'#c0392b');P(ix+7,iy-4,1,4,'#f8f0d0');}
+    if(b.icon==='saw'){P(ix+4,iy-4,7,3,'#c0c4cc');for(let i=0;i<7;i+=2)P(ix+4+i,iy-1,1,1,'#c0c4cc');P(ix+10,iy-5,3,4,'#7a4a28');}}
+}
+function prerender(m){
+  m.mask=grid(m.w,m.h,false);
+  (m.buildings||[]).forEach(b=>{for(let j=b.y;j<b.y+b.h;j++)for(let i=b.x;i<b.x+b.w;i++)m.mask[j][i]=true;const wp=(m.warps||[]).find(wr=>wr.x===b.door&&wr.y===b.y+b.h-1);if(wp)m.mask[wp.y][wp.x]=false;});
+  m.cv=[0,1].map(f=>{const[c,x]=mk(m.w*16,m.h*16);
+    for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++){let ch=m.t[j][i];let key=ch;
+      if(m.interior&&ch==='r')key='rug';if(m.id==='hauts'&&ch==='k')key='krock';if(m.id==='hauts'&&ch==='P')key='pine';
+      if(ch==='W'&&!(m.t[j+1]&&'WOPRD'.includes(m.t[j+1][i])))key='Wb';
+      if(ch==='b'&&m.interior)key='bb';
+      const set=TILES[key]||TILES['.'];const hh=(i*7+j*13)%set.length;const tl=(ch==='~'||ch==='#')?set[f%set.length]:set[hh];x.drawImage(tl,i*16,j*16);
+      if((m.id==='town'||m.id==='mer')&&ch==='s'&&m.t[j+1]&&m.t[j+1][i]==='~'){x.fillStyle='#ffffff';x.fillRect(i*16,j*16+15,16,1);}
+      if((m.id==='town'||m.id==='mer')&&ch==='~'&&j>0&&m.t[j-1][i]==='s'){x.fillStyle=f?'#c8e4fa':'#a8d0f4';x.fillRect(i*16+(f?2:6),j*16+1,6,1);}}
+    (m.buildings||[]).forEach(b=>drawBuilding(x,b,f));
+    if(m.fountain){const fx=m.fountain.x*16,fy=m.fountain.y*16;ellp(x,fx+16,fy+18,15,11,'#7a7a88');ellp(x,fx+16,fy+17,13,9,'#a8a8b8');ellp(x,fx+16,fy+18,10,6,'#4c8fd6');x.fillStyle='#d0d0dc';x.fillRect(fx+14,fy+6,4,12);x.fillStyle=f?'#c8e8ff':'#9fd0f0';x.fillRect(fx+13,fy+3,6,3);x.fillRect(fx+(f?10:20),fy+16,3,1);x.fillRect(fx+(f?19:11),fy+20,3,1);}
+    return c;});
+}
+
+/* ================= DIALOG / MENU / PANEL ================= */
+function wrapText(text,maxW,font){D.font=font;const out=[];for(const para of text.split('\n')){let line='';for(const wd of para.split(' ')){const tt=line?line+' '+wd:wd;if(D.measureText(tt).width>maxW&&line){out.push(line);line=wd;}else line=tt;}out.push(line);}return out;}
+function rr(x,y,w,h,r){D.beginPath();D.moveTo(x+r,y);D.arcTo(x+w,y,x+w,y+h,r);D.arcTo(x+w,y+h,x,y+h,r);D.arcTo(x,y+h,x,y,r);D.arcTo(x,y,x+w,y,r);D.closePath();}
+function box(x,y,w,h,fill=C.fill,mid=C.mid){D.fillStyle=C.edge;rr(x,y,w,h,16);D.fill();D.fillStyle=mid;rr(x+5,y+5,w-10,h-10,12);D.fill();D.fillStyle=fill;rr(x+10,y+10,w-20,h-20,8);D.fill();}
+function txt(s,x,y,font,col=C.text,sh=C.sh,align='left'){D.font=font;D.textAlign=align;D.textBaseline='alphabetic';if(sh){D.fillStyle=sh;D.fillText(s,x+3,y+3);}D.fillStyle=col;D.fillText(s,x,y);D.textAlign='left';}
+const UI={dialog:null,menu:null,panel:null,
+  active(){return!!(this.dialog&&!this.dialog.done)||!!this.menu||!!this.panel;},
+  update(){if(this.menu){updMenu();return true;}if(this.panel){if(pressed.has('a')||pressed.has('b')||pressed.has('menu')){const r=this.panel.res;this.panel=null;SFX.back();r();}return true;}if(this.dialog&&!this.dialog.done){updDialog();return true;}return false;},
+  draw(){if(this.dialog)drawDialog();if(this.menu)drawMenu();if(this.panel)this.panel.draw();}};
+function say(text,sp,keep=false){return new Promise(res=>{text=frType(text);const port=sp&&HEROES[sp]?sp:null;const name=port?HEROES[sp].first:(sp||null);const lines=wrapText(text,port?752:872,F_DLG);const pages=[];for(let i=0;i<lines.length;i+=3)pages.push(lines.slice(i,i+3));UI.dialog={pages,pi:0,ch:0,name,port,keep,res,done:false};});}
+function updDialog(){const d=UI.dialog,pg=d.pages[d.pi],total=pg.join('').length;
+  if(d.ch<total){d.ch+=held.a?3:1.5;if(T%3===0)SFX.text();if(pressed.has('a')||pressed.has('b'))d.ch=total;if(d.ch>=total&&d.keep&&d.pi===d.pages.length-1){d.done=true;d.res();}return;}
+  if(d.keep&&d.pi===d.pages.length-1){d.done=true;d.res();return;}
+  if(pressed.has('a')||pressed.has('b')){if(d.pi<d.pages.length-1){d.pi++;d.ch=0;SFX.blip();}else{UI.dialog=null;d.res();}}}
+function drawDialog(){const d=UI.dialog;box(12,452,936,176);
+  if(d.name){D.font=F_UI;const w=D.measureText(d.name).width+48;box(26,404,w,62,'#2c3150','#f2c14e');txt(d.name,50,446,F_UI,'#fbf7ec','#11131f');}
+  let x0=48;if(d.port){D.imageSmoothingEnabled=false;D.fillStyle='#e6dcc4';rr(30,474,116,134,10);D.fill();D.drawImage(BUST[d.port],38,490,100,100);x0=168;}
+  let left=Math.floor(d.ch);const pg=d.pages[d.pi];pg.forEach((ln,i)=>{if(left<=0)return;const s=ln.slice(0,left);left-=ln.length;txt(s,x0,512+i*46,F_DLG);});
+  if(d.ch>=pg.join('').length&&!d.keep&&(T>>4)%2)txt('▼',908,606,F_SM,C.edge,null);}
+function ask(text,opts,sp){return say(text,sp,true).then(()=>menu({items:opts.map(l=>({l})),cancel:false,x:948-Math.min(880,Math.max(...opts.map(o=>{D.font=F_UI;return D.measureText(frType(o)).width;}))+96),y:452-(opts.length*48+44)-6,w:Math.min(880,Math.max(...opts.map(o=>{D.font=F_UI;return D.measureText(frType(o)).width;}))+96)})).then(i=>{UI.dialog=null;return i;});}
+function menu(o){return new Promise(res=>{const m={cols:1,font:F_UI,lh:48,cancel:true,idx:0,...o,res};m.items=m.items.map(it=>({...it,l:frType(it.l)}));if(!m.h)m.h=Math.ceil(m.items.length/m.cols)*m.lh+44;UI.menu=m;});}
+function updMenu(){const m=UI.menu,n=m.items.length,c=m.cols;let i=m.idx;
+  if(pressed.has('up')){if(i-c>=0)i-=c;else if(c===1)i=n-1;}
+  if(pressed.has('down')){if(i+c<n)i+=c;else if(c===1)i=0;}
+  if(c>1){if(pressed.has('left')&&i%c>0)i--;if(pressed.has('right')&&i%c<c-1&&i+1<n)i++;}
+  if(i!==m.idx){m.idx=i;SFX.blip();}
+  if(pressed.has('a')){const it=m.items[m.idx];if(it.dis){SFX.bump();return;}UI.menu=null;SFX.sel();m.res(m.idx);}
+  else if((pressed.has('b')||pressed.has('menu'))&&m.cancel){UI.menu=null;SFX.back();m.res(-1);}}
+function drawMenu(){const m=UI.menu;
+  if(m.prompt){box(12,452,936,176);wrapText(frType(m.prompt),m.x-80,F_DLG).slice(0,3).forEach((l,i)=>txt(l,48,512+i*46,F_DLG));}
+  box(m.x,m.y,m.w,m.h);const c=m.cols,cw=(m.w-64)/c;
+  m.items.forEach((it,i)=>{const col=i%c,row=Math.floor(i/c),x=m.x+52+col*cw,y=m.y+54+row*m.lh;txt(it.l,x,y,m.font,it.dis?C.dim:C.text,it.dis?null:C.sh);if(it.r)txt(it.r,m.x+m.w-34,y,m.font,it.dis?C.dim:C.text,null,'right');if(i===m.idx)txt('▶',x-30,y,m.font,'#c0392b',null);});
+  if(m.info){const b=m.infoBox;box(b.x,b.y,b.w,b.h);const inf=m.info(m.idx);if(inf){txt(inf.t,b.x+30,b.y+48,F_XS,'#7a4a28',null);wrapText(frType(inf.d||''),b.w-60,F_XS).slice(0,4).forEach((l,i)=>txt(l,b.x+30,b.y+80+i*26,F_XS,C.text,null));}}}
+function panel(draw){return new Promise(res=>{UI.panel={draw,res};});}
+
+/* ================= SCENES ================= */
+let scene=null;
+function drawLake(g,night,t){
+  const sky=night?['#0b0a1e','#13123a','#1d1b4f','#2a2766','#38337a']:['#2b2350','#4b2f6b','#7d3d78','#c45a6c','#ec9468','#f6c27a'];
+  const bh=Math.ceil(96/sky.length);sky.forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*bh,SW,bh);});
+  if(night){const r=rng(9);for(let i=0;i<70;i++){const x=r()*SW|0,y=r()*90|0;if(((t>>3)+i)%13){g.fillStyle=i%5?'#c8c8ff':'#ffffff';g.fillRect(x,y,1,1);}}g.fillStyle='#f4f0d8';g.fillRect(190,18,10,10);g.fillStyle=sky[1];g.fillRect(194,16,8,9);}
+  else{g.fillStyle='#ffe2a0';ellp(g,120,92,14,14,'#ffd88a');}
+  for(let L=0;L<2;L++){for(let x=0;x<SW;x++){const hgt=(L?18:28)+Math.sin(x*.045+L*2)*(L?7:12)+Math.sin(x*.13+L)*(L?3:5)+Math.sin(x*.021)*8;const top=(L?100:96)-hgt;g.fillStyle=L?(night?'#1a1838':'#3b2f55'):(night?'#26244a':'#5a4a7a');g.fillRect(x,top,1,(L?100:96)-top+4);if(!L&&hgt>36){g.fillStyle=night?'#8a8ab8':'#e8e0f0';g.fillRect(x,top,1,3);}}}
+  g.fillStyle=night?'#141a3a':'#3a4a8a';g.fillRect(0,100,SW,60);
+  for(let i=0;i<40;i++){const y=102+((i*7)%56),x=((i*37+t*(i%3+1)*.3)%280)-20;g.fillStyle=night?'#2a3466':(i%2?'#f6c27a':'#6a7ab8');g.fillRect(x|0,y,6+(i%4)*3,1);}
+}
+const TITLE={update(){if(BUSY)return;if(pressed.has('a')||pressed.has('menu')){SFX.start();run(titleMenu);}},
+  draw(g){drawLake(g,false,T);g.fillStyle='#1d2a1a';g.fillRect(0,150,SW,10);[['yvain',56],['guilhem',120],['nicodeme',184]].forEach(([k,x],i)=>{const bob=Math.round(Math.sin(T/20+i*1.3)*1.5);g.drawImage(BUST[k],x-25,104+bob);});},
+  ui(){txt('LA LÉGENDE',480,120,PS(26),'#fbf3dc','#2a1636','center');D.font=PS(44);D.textAlign='center';D.lineJoin='round';D.lineWidth=12;D.strokeStyle='#2a1636';D.strokeText('DES TROIS MOUSKITO',480,196);D.fillStyle='#8a4a1a';D.fillText('DES TROIS MOUSKITO',484,200);D.fillStyle=C.gold;D.fillText('DES TROIS MOUSKITO',480,196);D.textAlign='left';
+    if(!UI.menu)txt('Trois chapitres et un épilogue',480,254,F_UI,'#fbf3dc','#2a1636','center');
+    if(!UI.menu&&(T>>5)%2)txt(document.body.classList.contains('touch')?'Touche A pour commencer':'Appuie sur ENTRÉE',480,352,PS(18),'#ffffff','#2a1636','center');
+    txt('Un jeu développé par la Compagnie des Dindons',944,30,F_XS,'#f8d8c0',null,'right');}};
+const CINE={pages:null,i:0,ch:0,res:null,
+  update(){const p=this.pages[this.i],len=frType(p.t).length;if(this.ch<len){this.ch+=.9;if(T%4===0)SFX.text();}
+    if(pressed.has('b')||pressed.has('menu')){this.res();return;}
+    if(pressed.has('a')){if(this.ch<len)this.ch=len;else if(this.i<this.pages.length-1){this.i++;this.ch=0;SFX.blip();}else this.res();}},
+  draw(g){const v=this.pages[this.i].v;
+    if(v==='shadow'){g.fillStyle='#0a0612';g.fillRect(0,0,SW,SH);for(let i=0;i<8;i++){const ty=30+((i*17)%30);g.fillStyle='#1a1028';g.fillRect(20+i*28,ty,20,90);g.fillStyle='#2a1c3c';for(let k=0;k<6;k++)g.fillRect(22+i*28,ty+4+k*12,16,2);}ellp(g,120,30,21,21,'#3a2a12');ellp(g,120,30,19,19,'#d8c890');ellp(g,120,30,17,17,'#f0e4b0');g.fillStyle='#2a1a08';for(let k=0;k<12;k++){const a=k/12*Math.PI*2;g.fillRect(Math.round(120+Math.cos(a)*15),Math.round(30+Math.sin(a)*15),1,1);}const a1=T/50,a2=T/7;for(let r=0;r<9;r++)g.fillRect(Math.round(120+Math.cos(a1)*r),Math.round(30+Math.sin(a1)*r),1,1);g.fillStyle='#c0392b';for(let r=0;r<14;r++)g.fillRect(Math.round(120+Math.cos(a2)*r),Math.round(30+Math.sin(a2)*r),1,1);g.drawImage(SHADOWBUST,70,44,100,100);for(let i=0;i<6;i++){const y=Math.round((T*.4+i*37)%190)-20,x=(i*53+14)%226;g.fillStyle='#e8e0d0';g.fillRect(x,y,7,9);g.fillStyle='#b8b0a0';g.fillRect(x+1,y+2,5,1);g.fillStyle='#c0392b';g.fillRect(x+2,y+5,3,3);}return;}
+    drawLake(g,true,T);
+    if(HEROES[v]){g.fillStyle='rgba(10,8,30,.45)';g.fillRect(0,0,SW,SH);ellp(g,120,104,46,8,'#2a2a5a');g.drawImage(BUST[v],70,6,100,100);}
+    if(v==='trio'){g.fillStyle='rgba(10,8,30,.4)';g.fillRect(0,0,SW,SH);ellp(g,120,90,90,10,'#2a2a5a');['yvain','guilhem','nicodeme'].forEach((k,i)=>g.drawImage(BUST[k],46+i*49,40+Math.round(Math.sin(T/24+i)*1.5)));}},
+  ui(){const p=this.pages[this.i];const lines=wrapText(frType(p.t),820,F_DLG);const sy=Math.min(476,560-(lines.length-1)*42);D.fillStyle='rgba(8,6,20,.78)';D.fillRect(0,sy-46,960,640-sy+46);let left=Math.floor(this.ch);lines.forEach((ln,i)=>{if(left<=0)return;txt(ln.slice(0,left),480,sy+i*42,F_DLG,'#f4ecd8','#0a0814','center');left-=ln.length+1;});
+    txt('A : suivant   ·   B : passer',944,626,F_XS,'#8a84a8',null,'right');}};
+function cinematic(pages){return new Promise(res=>{CINE.pages=pages;CINE.i=0;CINE.ch=0;CINE.res=()=>{CINE.res=()=>{};res();};scene=CINE;fadeTo(0,20);});}
+const INTRO_PAGES=[
+ {v:'lake',t:'Il y a fort longtemps… enfin, il y a quelques années, au royaume de Lémanie, sur les rives du Grand Lac, les Mouskito volaient plus haut que les rêves.'},
+ {v:'guilhem',t:'Là vivait un jeune homme calme et patient, que l\'école n\'aimait guère, mais dont les mains savaient déjà tout. Il anticipait tout… sauf ses soirées.'},
+ {v:'nicodeme',t:'Non loin, un barde autodidacte, stratège et rêveur, toujours occupé à bricoler quelque chose. Il n\'avait jamais tort. Enfin… c\'était pas faux.'},
+ {v:'yvain',t:'Et son ami d\'enfance, un guerrier loyal et intrépide, qui y allait. Toujours. Souvent sans savoir où.'},
+ {v:'trio',t:'Trois destins. Trois barbes. Un seul lieu où tout allait se jouer…'},
+ {v:'trio',t:'… devant la salle d\'entretien de l\'Atelier du Maître Rabotin.'},
+ {v:'lake',t:'Voici leur légende.'}];
+const SELECT={i:0,
+  update(){if(BUSY)return;const ks=['yvain','guilhem','nicodeme'];if(pressed.has('left')){this.i=(this.i+2)%3;SFX.blip();}if(pressed.has('right')){this.i=(this.i+1)%3;SFX.blip();}
+    if(pressed.has('a')){const id=ks[this.i];run(async()=>{const r=await ask(this.mode===2?`Mener l'équipe avec ${HEROES[id].name} ?`:`Partir à l'aventure avec ${HEROES[id].name} ?`,['Oui, c\'est parti !','Non, attends']);if(r===0)await({1:startGame,2:startCh2,3:startCh3,4:startEpi}[this.mode||1])(id);});}},
+  draw(g){for(let y=0;y<SH;y+=8){g.fillStyle=(y/8)%2?'#7a4a2a':'#8a5634';g.fillRect(0,y,SW,8);g.fillStyle='#5a3418';g.fillRect(0,y+7,SW,1);for(let x=((y/8)%2)*23;x<SW;x+=46){g.fillStyle='#5a3418';g.fillRect(x,y,1,7);}}
+    g.fillStyle='rgba(20,10,5,.35)';g.fillRect(0,0,SW,SH);},
+  ui(){txt(this.mode>=2?'QUI MÈNE L\'ÉQUIPE ?':'CHOISIS TON HÉROS',480,64,PS(24),C.gold,'#2a1408','center');const ks=['yvain','guilhem','nicodeme'];
+    ks.forEach((k,i)=>{const x=24+i*312,y=96,sel=i===this.i,hd=HEROES[k];D.globalAlpha=sel?1:.72;box(x,y,288,500,sel?'#fbf7ec':'#e6dfcf',sel?C.gold:C.mid);
+      D.fillStyle=sel?'#f0dcb0':'#d8ccb4';rr(x+44,y+22,200,200,12);D.fill();const bob=sel?Math.round(Math.sin(T/10)*4):0;D.drawImage(BUST[k],x+44,y+22+bob,200,200);
+      txt(hd.name,x+144,y+262,F_UI,C.text,C.sh,'center');txt(hd.cls,x+144,y+294,F_SM,'#7a4a28',null,'center');txt(hd.el,x+144,y+322,F_XS,'#5a6a8a',null,'center');
+      txt(hd.quote,x+144,y+356,F_XS,'#6a4a6a',null,'center');
+      [['PV',hd.base.hp/50],['ATT',hd.base.atk/15],['DÉF',hd.base.def/15],['VIT',hd.base.spd/15]].forEach(([l,v],j)=>{const yy=y+376+j*24;txt(l,x+36,yy+12,F_XS,C.text,null);D.fillStyle='#d8d0bc';D.fillRect(x+96,yy,156,12);D.fillStyle=['#5ac45c','#e0503c','#4a8ae0','#f0c040'][j];D.fillRect(x+96,yy,156*Math.min(1,v),12);});
+      txt(`(${hd.real})`,x+144,y+486,F_XS,C.dim,null,'center');D.globalAlpha=1;});
+    txt('◀ ▶ choisir   ·   ENTRÉE valider',480,624,F_SM,'#f4e4c4','#2a1408','center');}};
+const CARD={a:'',b:'',t:0,res:null,update(){this.t++;if((this.t>50&&pressed.has('a'))||this.t>210){const r=this.res;this.res=null;r&&r();}},draw(g){g.fillStyle='#0d0b16';g.fillRect(0,0,SW,SH);},
+  ui(){const a=Math.min(1,this.t/40);D.globalAlpha=a;txt(this.a,480,290,PS(30),C.gold,'#3a1a08','center');txt(this.b,480,350,F_UI,'#f4ecd8',null,'center');D.fillStyle=C.gold;D.fillRect(380,314,200,3);D.globalAlpha=1;}};
+function card(a,b){return new Promise(res=>{CARD.a=a;CARD.b=b;CARD.t=0;CARD.res=res;scene=CARD;});}
+async function startGame(id){newGame(id);await fadeTo(1,24);const cp=card('CHAPITRE I',"Le Stage d'Observation");await fadeTo(0,16);await cp;await fadeTo(1,20);WORLD.load('home',2,3,0);scene=WORLD;await fadeTo(0,24);await wakeScript();}
+
+/* ================= WORLD ================= */
+function ent(x,y,dir,look){return{x,y,px:x*16,py:y*16,dir,look,moving:false,prog:0,fx:x,fy:y,speed:2,stepN:0};}
+const WORLD={map:null,player:null,followers:[],banner:null,lastBump:0,
+  load(id,x,y,dir){this.map=MAPS[id];this.player=ent(x,y,dir,G.hero);this.followers=G.party.slice(1).map(k=>ent(x,y,dir,k));this.banner={t:id==='home'?'MAISON DE '+H().toUpperCase():this.map.name,n:150};},
+  solid(x,y){const m=this.map;if(x<0||y<0||x>=m.w||y>=m.h)return true;if(m.mask[y][x])return true;return m.solid.includes(m.t[y][x]);},
+  objAt(x,y){return this.map.objs.find(o=>vis(o)&&((o.x===x&&o.y===y)||(o.tiles&&o.tiles.some(([a,b])=>a===x&&b===y))));},
+  blocked(x,y){return this.solid(x,y)||!!this.objAt(x,y);},
+  update(){const P=this.player;
+    for(const o of this.map.objs)if(o.moving)adv(o);
+    if(!BUSY&&!UI.active())for(const o of this.map.objs)if(o.patrol&&!o.moving&&vis(o)){o.pt=(o.pt||0)+1;if(o.pt%36===0)patrolStep(o);}
+    if(P.moving){adv(P);this.followers.forEach(adv);if(!P.moving){this.onStep();}else return;}
+    if(BUSY||UI.active())return;
+    if(pressed.has('menu')){run(worldMenu);return;}
+    if(pressed.has('a')){this.interact();return;}
+    const d=heldDir();if(d!==null){P.dir=d;const[dx,dy]=DIRV[d];if(!this.blocked(P.x+dx,P.y+dy)){const chain=[P,...this.followers];const prev=chain.map(e=>[e.x,e.y]);startMove(P,dx,dy,held.b?4:2);for(let i=1;i<chain.length;i++){const[tx,ty]=prev[i-1],f=chain[i];if(f.x!==tx||f.y!==ty){const ddx=tx-f.x,ddy=ty-f.y;f.dir=Math.abs(ddx)>Math.abs(ddy)?(ddx<0?2:3):(ddy<0?1:0);startMove(f,ddx,ddy,P.speed);}}}
+      else if(T-this.lastBump>18){SFX.bump();this.lastBump=T;}}},
+  onStep(){const P=this.player,m=this.map;
+    const wp=(m.warps||[]).find(w=>w.x===P.x&&w.y===P.y);if(wp){run(()=>warp(wp));return;}
+    const tr=(m.triggers||[]).find(t=>t.x===P.x&&t.y===P.y);if(tr){run(tr.fn);return;}
+    if(m.enc&&m.t[P.y][P.x]==='"'){G.since++;if(G.since>3&&Math.random()<.12){G.since=0;run(wildBattle);}}},
+  interact(){const P=this.player,[dx,dy]=DIRV[P.dir],x=P.x+dx,y=P.y+dy;const o=this.objAt(x,y);
+    if(o&&o.act){if(o.kind==='npc')o.dir=[1,0,3,2][P.dir];run(()=>o.act(o));return;}
+    const ch=this.map.t[y]&&this.map.t[y][x];const ta=this.map.tileAct&&this.map.tileAct[ch];if(ta)run(()=>ta(x,y));},
+  draw(g){const m=this.map,P=this.player;let cx=Math.round(P.px+8-SW/2),cy=Math.round(P.py+8-SH/2);
+    cx=m.w*16<=SW?Math.round((m.w*16-SW)/2):clamp(cx,0,m.w*16-SW);cy=m.h*16<=SH?Math.round((m.h*16-SH)/2):clamp(cy,0,m.h*16-SH);this.cam=[cx,cy];
+    g.fillStyle='#1d1826';g.fillRect(0,0,SW,SH);g.drawImage(m.cv[(T>>5)&1],-cx,-cy);
+    const list=[];for(const o of m.objs)if(vis(o)&&o.kind!=='deco')list.push({y:o.py+(o.kind==='boss'?1:0),f:()=>drawObj(g,o,cx,cy)});
+    this.followers.forEach(f=>list.push({y:f.py-.5,f:()=>drawEnt(g,f,cx,cy)}));list.push({y:P.py,f:()=>drawEnt(g,P,cx,cy)});
+    list.sort((a,b)=>a.y-b.y).forEach(o=>o.f());},
+  ui(){const b=this.banner;if(b&&b.n>0){b.n--;const yo=b.n>130?(b.n-150)*3:b.n<20?(20-b.n)*-3:0;D.font=F_UI;const w=D.measureText(b.t).width+60;box(16,16+yo,w,64,'#fbf7ec',C.gold);txt(b.t,46,58+yo,F_UI);}}};
+function vis(o){return!o.cond||o.cond();}
+function startMove(e,dx,dy,sp){e.fx=e.x;e.fy=e.y;e.x+=dx;e.y+=dy;e.prog=0;e.moving=true;e.speed=sp;e.stepN++;}
+function adv(e){e.prog=Math.min(1,e.prog+e.speed/16);e.px=(e.fx+(e.x-e.fx)*e.prog)*16;e.py=(e.fy+(e.y-e.fy)*e.prog)*16;if(e.prog>=1)e.moving=false;}
+function drawEnt(g,e,cx,cy){const fr=walker(e.look);const st=e.moving&&e.prog<.5?((e.stepN%2)?1:2):0;const c=fr[e.dir][st];const px=Math.round(e.px)-cx,py=Math.round(e.py)-cy+(e.hop||0);const bh=c.height-2;
+  g.fillStyle='rgba(20,40,20,.28)';g.fillRect(px+3,Math.round(e.py)-cy+14,10,2);g.fillRect(px+4,Math.round(e.py)-cy+13,8,1);g.drawImage(c,px-1,py+15-bh);
+  const m=WORLD.map;if(m){const tx=Math.round(e.px/16),ty=Math.round(e.py/16);if(m.t[ty]&&m.t[ty][tx]==='"')g.drawImage(TILES['"'][0],0,10,16,6,tx*16-cx,ty*16+10-cy,16,6);}
+  if(e.emote)drawEmote(g,px+8,py+15-bh-4,e.emote);}
+function drawEmote(g,x,y,ch){g.fillStyle='#1f1a2e';g.fillRect(x-5,y-11,10,11);g.fillStyle='#ffffff';g.fillRect(x-4,y-10,8,9);g.fillStyle='#d03a2a';if(ch==='!'){g.fillRect(x-1,y-9,2,5);g.fillRect(x-1,y-3,2,1);}else{g.fillRect(x-2,y-9,4,1);g.fillRect(x+1,y-8,1,2);g.fillRect(x-1,y-6,2,1);g.fillRect(x-1,y-3,2,1);}}
+function drawObj(g,o,cx,cy){const x=o.px-cx,y=o.py-cy;
+  if(o.kind==='npc')return drawEnt(g,o,cx,cy);
+  if(o.kind==='sign')return g.drawImage(SPR.sign,x,y+1);
+  if(o.kind==='prop'){const s=SPR[o.spr];return g.drawImage(s,x+8-s.width/2,y+15-s.height+1);}
+  if(o.kind==='item'){const s=SPR[o.spr],bob=Math.round(Math.sin(T/12+o.x)*1);g.fillStyle='rgba(20,40,20,.25)';g.fillRect(x+4,y+13,8,2);g.drawImage(s,x+8-s.width/2,y+13-s.height+bob);if((T+o.x*9)%50<14){g.fillStyle='#ffffff';const sx=x+12,sy=y+1;g.fillRect(sx,sy-1,1,3);g.fillRect(sx-1,sy,3,1);}return;}
+  if(o.kind==='boss2'){const c=FOESPR[o.spr];g.drawImage(c,Math.round(x+8-c.width/2),y+16-c.height+2);return;}
+  if(o.kind==='gate'){g.fillStyle='#1f1a2e';g.fillRect(x,y+3,16,11);g.fillStyle='#7a4a28';g.fillRect(x+1,y+2,3,13);g.fillRect(x+12,y+2,3,13);g.fillStyle='#a87a54';g.fillRect(x,y+5,16,5);
+    ['sealG','sealN','sealY'].forEach((k,i)=>{g.fillStyle=G.flags[k]?'#f2c14e':'#c0392b';g.fillRect(x+3+i*4,y+6,3,3);});return;}
+  if(o.kind==='boss'){const c=FOESPR.arbre,sw=Math.round(Math.sin(T/18)*1);g.save();g.translate(x+8,y+16);g.drawImage(c,-c.width/2+sw,-c.height+2);g.restore();if(o.emote)drawEmote(g,x+8,y-48,o.emote);}}
+async function walkTo(o,steps,sp=2){for(const[dx,dy]of steps){o.dir=dx<0?2:dx>0?3:dy<0?1:0;startMove(o,dx,dy,sp);await until(()=>!o.moving);}}
+async function warp(wp){SFX.door();await fadeTo(1,14);WORLD.load(wp.to,wp.tx,wp.ty,wp.dir);await wait(4);const oe=WORLD.map.onEnter;if(oe){const r=oe();if(r&&r.then){await r;return;}}await fadeTo(0,14);}
+async function worldMenu(){SFX.sel();let idx=0;
+  while(true){const i=await menu({items:[{l:'Équipe'},{l:'Sac'},{l:'Succès'},{l:'Objectif'},{l:'Son : '+(muted?'coupé':'activé')},{l:'Recommencer'},{l:'Fermer'}],x:670,y:14,w:276,idx});
+    if(i<0||i===6)return;idx=i;
+    if(i===5){const c=await menu({items:[{l:'Recommencer ce chapitre'},{l:'Retour à l\'écran titre'},{l:'Annuler'}],x:500,y:120,w:450,prompt:'Recommencer ? La progression depuis la dernière sauvegarde sera perdue.'});
+      if(c===0){await({1:startGame,2:startCh2,3:startCh3,4:startEpi}[G.ch||1])(G.hero);return;}
+      if(c===1){await fadeTo(1,24);scene=TITLE;UI.dialog=null;await fadeTo(0,24);return;}
+      continue;}
+    if(i===0)await panel(drawTeam);if(i===1)await bagWorld();if(i===2)await panel(drawAch);if(i===3)await say(objective());if(i===4){muted=!muted;if(!muted)SFX.sel();}}}
+function hpCol(r){return r>.5?C.hpG:r>.2?C.hpY:C.hpR;}
+function hpBar(x,y,w,h,r){D.fillStyle='#3a3a48';rr(x-3,y-3,w+6,h+6,6);D.fill();D.fillStyle='#e8e4d8';D.fillRect(x,y,w,h);D.fillStyle=hpCol(r);D.fillRect(x,y,Math.round(w*clamp(r,0,1)),h);D.fillStyle='rgba(255,255,255,.35)';D.fillRect(x,y,Math.round(w*clamp(r,0,1)),3);}
+function drawTeam(){box(40,40,880,560);txt("L'ÉQUIPE",80,100,PS(22),'#7a4a28',null);
+  G.party.forEach((id,i)=>{const h=G.heroes[id],y=130+i*150;D.fillStyle='#ece2c8';rr(74,y,812,134,12);D.fill();D.drawImage(BUST[id],90,y+8,118,118);
+    txt(HEROES[id].name,232,y+44,F_UI);txt(`Nv ${h.lvl}`,850,y+44,F_UI,C.text,null,'right');txt(HEROES[id].cls,232,y+76,F_SM,'#7a4a28',null);
+    hpBar(232,y+88,420,14,h.hp/h.maxhp);txt(`${h.hp} / ${h.maxhp} PV`,850,y+102,F_SM,C.text,null,'right');
+    txt(`ATT ${h.atk}  ·  DÉF ${h.def}  ·  VIT ${h.spd}`,232,y+128,F_XS,'#5a5a6a',null);});
+  if(G.party.length<3)txt(`Compagnons manquants : ${3-G.party.length}`,480,580,F_SM,C.dim,null,'center');}
+function drawAch(){box(40,30,880,580);const n=Object.keys(G.ach).length;txt('SUCCÈS',80,90,PS(22),'#7a4a28',null);txt(`${n} / ${Object.keys(ACH).length}`,880,90,F_UI,C.text,null,'right');
+  Object.entries(ACH).forEach(([k,a],i)=>{const y=140+i*62,ok=G.ach[k];D.fillStyle=ok?'#f4e2a8':'#e6e0d2';rr(74,y-34,812,52,10);D.fill();txt(ok?'★':'?',100,y,F_UI,ok?'#c08a10':C.dim,null);txt(ok?a.n:'???',140,y,F_UI,ok?C.text:C.dim,null);txt(ok?a.d:'Succès caché',860,y,F_XS,ok?'#5a5a6a':C.dim,null,'right');});
+  const nc=Object.keys(G.copeaux).length;txt(`Copeaux d'Or : ${nc} / 5`,480,596,F_SM,'#8a6a10',null,'center');}
+function bagItems(){return Object.keys(ITEMS).filter(k=>G.bag[k]>0);}
+async function bagWorld(){const ks=bagItems();if(!ks.length){await say('Ton sac est vide. Il contient surtout de la sciure.');return;}
+  const i=await menu({items:ks.map(k=>({l:ITEMS[k].n,r:'× '+G.bag[k]})),x:300,y:60,w:520,info:j=>({t:ITEMS[ks[j]].n,d:ITEMS[ks[j]].d}),infoBox:{x:300,y:60+ks.length*48+50,w:520,h:150}});if(i<0)return;
+  const k=ks[i],it=ITEMS[k];const j=await menu({items:G.party.map(id=>{const h=G.heroes[id];return{l:HEROES[id].first,r:`${h.hp}/${h.maxhp}`,dis:(h.hp<=0&&!it.revive)||h.hp>=h.maxhp};}),x:300,y:60,w:420,prompt:`Sur qui utiliser ${it.n} ?`});if(j<0)return;
+  const h=G.heroes[G.party[j]];G.bag[k]--;h.hp=Math.min(h.maxhp,h.hp+it.heal);SFX.heal();await say(`${h.first} récupère des forces ! (${h.hp}/${h.maxhp} PV)`);}
+function objective(){if(G.ch===2)return objective2();if(G.ch===3)return objective3();if(G.ch===4)return G.flags.ordered?'Objectif : s\'installer à votre table, au milieu de la salle.':'Objectif : commander auprès du serveur, près du comptoir. (Et saluer les habitués.)';const f=G.flags;
+  if(WORLD.map.id==='home'&&!f.sandwich)return'Objectif : sortir de la maison. (Et dire au revoir à Maman.)';
+  if(G.party.length<3){const miss=['yvain','guilhem','nicodeme'].filter(k=>!inParty(k));const where={guilhem:'Guilhem, près de la bibliothèque',nicodeme:'Nicodème, dans le parc à l\'ouest',yvain:'Yvain, au bord du lac'};return`Objectif : convaincre tes futurs compagnons de venir à l'Atelier. On a vu ${miss.map(k=>where[k]).join(' et ')}.`;}
+  if(!f.bridge)return'Objectif : traverser le Pont des Apprentis, à l\'est de Vevey. Le Concierge y monte la garde.';
+  if(!f.boss)return'Objectif : atteindre l\'Atelier du Maître Rabotin, au nord de la Forêt des Copeaux.';
+  return'Objectif : entrer dans l\'Atelier du Maître Rabotin.';}
+
+/* ================= BATTLE ================= */
+const BAT={B:null,update(){},
+  draw(g){const B=this.B;if(!B)return;const sx=B.shake>0?((T%4<2)?2:-2):0;if(B.shake>0)B.shake--;g.save();g.translate(sx,0);drawBattleBg(g,B.env);
+    ellp(g,180,74,42,9,shade(B.plat,-30));ellp(g,180,73,40,8,B.plat);ellp(g,62,114,50,11,shade(B.plat,-30));ellp(g,62,113,48,10,B.plat);
+    const fc=FOESPR[B.foe.key];g.save();g.beginPath();g.rect(0,0,SW,76);g.clip();if(B.foeVis&&!(B.foeFlash>0&&(B.foeFlash>>2)%2)){const s=fc.width>56?1:1;g.drawImage(fc,Math.round(B.foeX+B.foeLunge-fc.width/2),Math.round(76-fc.height+B.foeSink-(fc.width>56?0:2)));}g.restore();if(B.foeFlash>0)B.foeFlash--;
+    if(B.heroVis&&B.hero()){const hc=BUSTB[B.hero().id];g.save();g.beginPath();g.rect(0,0,SW,113);g.clip();if(!(B.heroFlash>0&&(B.heroFlash>>2)%2))g.drawImage(hc,Math.round(B.heroX+B.heroLunge-25),Math.round(65+B.heroSink));g.restore();}if(B.heroFlash>0)B.heroFlash--;
+    for(let i=B.parts.length-1;i>=0;i--){const p=B.parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.g||0;p.l--;if(p.l<=0){B.parts.splice(i,1);continue;}g.fillStyle=p.c;g.fillRect(Math.round(p.x),Math.round(p.y),p.s||2,p.s||2);}
+    g.restore();},
+  ui(){const B=this.B;if(!B)return;const f=B.foe;
+    if(B.foeX>100&&B.foeVis){D.fillStyle='#2c3150';rr(36,40,430,104,14);D.fill();D.fillStyle='#fbf7ec';rr(42,46,418,92,10);D.fill();D.font=F_UI;txt(f.n,66,86,D.measureText(f.n).width>290?F_XS:F_UI);txt(`Nv ${f.lvl}`,440,86,F_UI,C.text,null,'right');txt('PV',66,122,F_SM,'#c08a10',null);hpBar(110,108,320,14,B.foeHpD/f.maxhp);if(f.el){D.font=F_XS;const ew=D.measureText(f.el).width+30;D.fillStyle='#2c3150';rr(452-ew,22,ew,32,10);D.fill();txt(f.el,452-ew/2,45,F_XS,'#f2c14e',null,'center');}}
+    const h=B.hero();if(h&&B.heroShown&&B.heroVis){D.fillStyle='#2c3150';rr(516,312,432,134,14);D.fill();D.fillStyle='#fbf7ec';rr(522,318,420,122,10);D.fill();txt(h.first,548,356,F_UI);txt(`Nv ${h.lvl}`,920,356,F_UI,C.text,null,'right');txt('PV',548,390,F_SM,'#c08a10',null);hpBar(592,376,328,14,B.heroHpD/h.maxhp);txt(`${Math.round(B.heroHpD)} / ${h.maxhp}`,920,420,F_SM,C.text,null,'right');D.fillStyle='#d8d4c8';D.fillRect(548,428,250,6);D.fillStyle=C.xp;D.fillRect(548,428,250*Math.min(1,h.xp/xpNeed(h.lvl)),6);}}};
+function drawBattleBg(g,env){const sky=env==='forest'?['#a8d8e8','#c0e4ee']:env==='shore'?['#9fd0f0','#bfe0f8']:['#a8d8f0','#c8e8f8'];g.fillStyle=sky[0];g.fillRect(0,0,SW,30);g.fillStyle=sky[1];g.fillRect(0,30,SW,30);
+  if(env==='forest'){for(let x=0;x<SW;x+=1){const h=14+Math.sin(x*.2)*4+Math.sin(x*.07)*6;g.fillStyle='#2f6e3a';g.fillRect(x,58-h,1,h+4);}g.fillStyle='#8cc868';g.fillRect(0,60,SW,100);for(let i=0;i<30;i++){g.fillStyle='#7ab85a';g.fillRect((i*53)%SW,64+(i*29)%90,6,1);}}
+  else if(env==='shore'){for(let x=0;x<SW;x++){const h=10+Math.sin(x*.05)*6+Math.sin(x*.13)*3;g.fillStyle='#8a8ab8';g.fillRect(x,46-h,1,h);if(h>14){g.fillStyle='#f0f0fa';g.fillRect(x,46-h,1,2);}}g.fillStyle='#4c8fd6';g.fillRect(0,46,SW,22);g.fillStyle='#86bdf0';for(let i=0;i<14;i++)g.fillRect((i*37+T/3)%SW|0,50+(i*5)%16,8,1);g.fillStyle='#f0dca0';g.fillRect(0,68,SW,92);}
+  else if(env==='underwater'){['#1a4a8a','#1e5a9a','#2468a8','#2a76b6'].forEach((cc,i)=>{g.fillStyle=cc;g.fillRect(0,i*40,SW,40);});g.fillStyle='rgba(255,255,255,.08)';for(let i=0;i<5;i++)g.fillRect(20+i*48,0,10,160);g.fillStyle='#c8b070';g.fillRect(0,100,SW,60);for(let i=0;i<12;i++){g.fillStyle='#3a9a5a';g.fillRect((i*23)%SW,70+(i*7)%20,3,40);}for(let i=0;i<10;i++){g.fillStyle='#bfe4ff';g.fillRect((i*37+5)%SW,(160-((T*.5+i*29)%160))|0,2,2);}}
+  else if(env==='nightbeach'){g.fillStyle='#120e30';g.fillRect(0,0,SW,50);for(let i=0;i<40;i++){g.fillStyle='#d8d8ff';g.fillRect((i*61)%SW,(i*23)%45,1,1);}g.fillStyle='#f4f0d8';g.fillRect(200,10,8,8);g.fillStyle='#1a2a5a';g.fillRect(0,50,SW,20);g.fillStyle='#3a4a7a';for(let i=0;i<10;i++)g.fillRect(((i*29+T/4)%SW)|0,55+(i*3)%12,8,1);g.fillStyle='#5a5070';g.fillRect(0,70,SW,90);}
+  else if(env==='mountain'){for(let x=0;x<SW;x++){const hh=22+Math.sin(x*.04)*10+Math.sin(x*.11)*5;g.fillStyle='#8a90b8';g.fillRect(x,58-hh,1,hh);if(hh>26){g.fillStyle='#f4f4fc';g.fillRect(x,58-hh,1,4);}}g.fillStyle='#a8d888';g.fillRect(0,58,SW,102);for(let i=0;i<24;i++){g.fillStyle='#e8f0ff';g.fillRect((i*47)%SW,64+(i*31)%90,2,1);}}
+  else if(env==='night'){g.fillStyle='#141236';g.fillRect(0,0,SW,60);for(let i=0;i<40;i++){g.fillStyle='#d8d8ff';g.fillRect((i*61)%SW,(i*23)%55,1,1);}for(let x=0;x<SW;x++){const hh=18+Math.sin(x*.05)*8;g.fillStyle='#2a2a5a';g.fillRect(x,60-hh,1,hh);}g.fillStyle='#6a4a2a';g.fillRect(0,60,SW,100);for(let y=62;y<SH;y+=6){g.fillStyle='#5a3c20';g.fillRect(0,y,SW,1);}}
+  else{g.fillStyle='#9ad078';g.fillRect(0,56,SW,104);}}
+function makeFoe(key,lvl){const b=FOES[key],sc=1+(lvl-5)*.1;const f={key,n:b.n,lvl,maxhp:Math.round(b.hp*sc),atk:Math.round(b.atk*sc),def:Math.round(b.def*sc),spd:b.spd,moves:b.moves,weak:b.weak,res:b.res,why:b.why||{},el:b.el||'',xp:Math.round(b.xp*lvl/5),st:{atk:0,def:0},conf:0,stun:false,foe:true};f.hp=f.maxhp;f.shield=key==='comte';return f;}
+const stM=s=>s>=0?(2+s)/2:2/(2-s);
+function calcDmg(a,d,m,crit,eff){return Math.max(1,Math.round(m.pow*a.atk*stM(a.st.atk)/(d.def*stM(d.st.def))*.19*(1+a.lvl*.05)*(.85+Math.random()*.15)*eff*(crit?1.5:1)));}
+function burst(B,x,y,col,n=14,up=false){for(let i=0;i<n;i++)B.parts.push({x,y,vx:(Math.random()-.5)*(up?1:3),vy:up?-Math.random()*1.5-.3:(Math.random()-.5)*3,l:20+Math.random()*16,c:col,s:Math.random()<.5?2:1});}
+async function battle(o){
+  const B={o,ids:o.solo?[o.solo]:G.party.slice(),foe:makeFoe(o.foe,o.lvl),act:0,foeX:-60,heroX:SW+60,foeLunge:0,heroLunge:0,foeSink:0,heroSink:0,foeVis:1,heroVis:1,foeFlash:0,heroFlash:0,shake:0,parts:[],env:o.env||'forest',plat:o.env==='shore'?'#d8c080':o.env==='night'?'#8a6038':o.env==='underwater'?'#c8b070':o.env==='nightbeach'?'#6a6080':'#6aaa4a',focus:false,heroShown:false};
+  B.hero=()=>G.heroes[B.ids[B.act]];B.foeHpD=B.foe.hp;
+  while(B.hero().hp<=0&&B.act<B.ids.length-1)B.act++;
+  B.ids.forEach(id=>{const h=G.heroes[id];h.st={atk:0,def:0};h.conf=0;h.stun=false;h.malmer=(o.malmer&&id==='nicodeme')?3:0;});
+  SFX.encounter();for(let i=0;i<3;i++){FLASH=.8;await wait(5);FLASH=0;await wait(5);}
+  await fadeTo(1,16);BAT.B=B;scene=BAT;B.heroHpD=B.hero().hp;await fadeTo(0,14);
+  await Promise.all([tw(B,'foeX',180,34,'out'),tw(B,'heroX',62,34,'out')]);
+  await say(o.intro||`Un ${B.foe.n} sauvage surgit !`);
+  if(FOES[o.foe].desc&&!o.boss&&!o.rival&&Math.random()<.6)await say(FOES[o.foe].desc);
+  B.heroShown=true;await say(HEROES[B.hero().id].send);if(o.malmer&&B.ids.includes('nicodeme'))await say('Nicodème est un peu vert… Le mal de mer le guette pendant les premiers tours.');if(o.final)await say('Le Comte est protégé par un Bouclier d\'Agendas. Seuls, vos coups l\'effleurent à peine… Et si vous essayiez ensemble ?');
+  let result=null;
+  while(!result){
+    const h=B.hero(),f=B.foe,act=await chooseAction(B);
+    if(act.t==='flee'){if(o.noFlee){await say(o.boss?'Impossible de fuir ! L\'arbre vous barre la route.':'On ne fuit pas un duel entre amis !');continue;}
+      if(Math.random()<.8){SFX.flee();await say('Vous prenez la fuite. Prudence est mère de sûreté.');result='flee';break;}await say('Impossible de s\'échapper !');}
+    const fm=pickFoeMove(f);let order;
+    if(act.t!=='move'||act.t==='flee')order=act.t==='flee'?['f']:['p','f'];
+    else{const pp=MOVES[act.k].prio||0,fp=MOVES[fm].prio||0;order=pp>fp?['p','f']:fp>pp?['f','p']:(h.spd*stM(0)>=f.spd?['p','f']:['f','p']);}
+    for(const who of order){
+      if(who==='p'){const hh=B.hero();if(hh.malmer>0&&act.t==='move'){hh.malmer--;await say(hh.malmer>0?'Nicodème a le mal de mer. Il préfère faire l\'inventaire de la plage.':'Nicodème se sent mieux ! Le mal de mer est passé.');}else if(hh.stun){hh.stun=false;await say(`${hh.first} est débordé et ne peut pas agir !`);}else if(act.t==='move')await doMove(B,B.hero(),f,act.k,true);else if(act.t==='item')await useItemB(B,act.k);else if(act.t==='switch')await switchTo(B,act.i,true);}
+      else{if(f.stun){f.stun=false;await say(`${f.n} est trop désemparé pour agir !`);}else await doMove(B,f,B.hero(),fm,false);}
+      if(f.hp<=0){await foeDown(B);result='win';break;}
+      if(B.hero().hp<=0){await heroDown(B);if(B.ids.some(id=>G.heroes[id].hp>0)){const i=await teamMenu(B,true);await switchTo(B,i,false);}else{result='lose';}break;}
+    }
+  }
+  if(result==='win'){const RV={guilhem:'C\'est pas grave, on continue !',nicodeme:'Aïe, ça a piqué.',yvain:'Faut que je récupère mon stuff.'};for(const id of G.party){const h=G.heroes[id];if(h.hp<=0){h.hp=Math.max(1,Math.round(h.maxhp*.3));SFX.heal();await say(`${h.first} se relève !`);await say(RV[id],id);}}}
+  if(result==='lose'){await say('Toute l\'équipe est épuisée…');await say('Tout devient flou…');}
+  await fadeTo(1,24);scene=WORLD;BAT.B=null;
+  if(result==='lose'&&!o.noRespawn&&G.ch===3){WORLD.load('mer',19,9,0);healAll();await wait(10);await fadeTo(0,30);await say('Vous vous réveillez sur la plage, une algue sur la tête. Le moniteur Rocco vous tend une serviette : « Allez, les spaghettis… »');await say('(L\'équipe est entièrement soignée.)');}
+  else if(result==='lose'&&!o.noRespawn&&G.ch===2){WORLD.load('hauts',19,27,1);healAll();await wait(10);await fadeTo(0,30);await say('Vous vous réveillez au pied du Mont-Pèlerin, enroulés dans une couverture. Quelqu\'un vous a aspergés d\'eau glacée. Ça rappelle des souvenirs.');await say('(L\'équipe est entièrement soignée.)');}
+  else if(result==='lose'&&!o.noRespawn){WORLD.load('home',13,2,0);healAll();await wait(10);await fadeTo(0,30);await say('Tu te réveilles… dans la baignoire. Quelqu\'un a dû t\'y mettre pour te réveiller.');await say('Ce n\'est apparemment pas la première fois. (Ton équipe est entièrement soignée.)');unlock('baignoire');}
+  else await fadeTo(0,20);
+  return result;}
+function pickFoeMove(f){if(f.key==='comte')return f.shield&&Math.random()<.3?'agenda':pick(['reunion','deadline','urgence','reunion']);if(f.key==='arbre'&&f.hp<f.maxhp*.4&&Math.random()<.6)return'chute';return pick(f.moves);}
+async function chooseAction(B){
+  while(true){const h=B.hero();
+    const i=await menu({items:[{l:'ATTAQUE'},{l:'SAC'},{l:'ÉQUIPE'},{l:'FUITE'}],cols:2,x:560,y:452,w:388,h:176,lh:56,font:F_UI,prompt:`Que doit faire ${h.first} ?`,cancel:false});
+    if(i===0){const mvs=B.o.final?[...h.moves,ENS[h.id]]:h.moves;const m=await menu({items:mvs.map(k=>({l:MOVES[k].n})),cols:2,x:12,y:452,w:640,h:176,lh:mvs.length>4?44:56,font:F_SM,info:j=>{const mv=MOVES[mvs[j]];return{t:mv.tag?'Élément : '+[].concat(mv.tag).map(t=>ELN[t]).join(' / '):'Effet spécial',d:(mv.k==='dmg'?`Puissance ${mv.pow}, précision ${mv.acc}. `:'')+mv.d};},infoBox:{x:652,y:452,w:296,h:176}});if(m>=0)return{t:'move',k:mvs[m]};}
+    if(i===1){const ks=bagItems();if(!ks.length){await say('Le sac est vide. Il reste un peu de sciure.');continue;}
+      const j=await menu({items:ks.map(k=>({l:ITEMS[k].n,r:'× '+G.bag[k]})),x:280,y:452-(ks.length*48+44)-6,w:520,prompt:`Utiliser un objet sur ${h.first} ?`});if(j>=0)return{t:'item',k:ks[j]};}
+    if(i===2){const j=await teamMenu(B,false);if(j>=0)return{t:'switch',i:j};}
+    if(i===3)return{t:'flee'};}}
+async function teamMenu(B,forced){const items=B.ids.map((id,i)=>{const h=G.heroes[id];return{l:HEROES[id].first+(i===B.act?' (au combat)':''),r:`${h.hp}/${h.maxhp}`,dis:h.hp<=0||i===B.act};});
+  if(items.every(it=>it.dis)){if(!forced)await say(B.ids.length<2?'Pas encore de compagnon. Il va falloir se faire des amis.':'Personne d\'autre ne peut combattre.');return-1;}
+  return menu({items,x:420,y:452-(items.length*48+44)-6,w:520,prompt:forced?'Qui prend la relève ?':'Qui envoyer au combat ?',cancel:!forced});}
+async function switchTo(B,i,vol){if(vol){await say(`Reviens, ${B.hero().first} !`);}await tw(B,'heroX',-60,16);B.act=i;B.heroSink=0;B.heroVis=1;B.heroHpD=B.hero().hp;await tw(B,'heroX',62,18,'out');await say(HEROES[B.hero().id].send);}
+async function useItemB(B,k){const h=B.hero(),it=ITEMS[k];G.bag[k]--;const before=h.hp;h.hp=Math.min(h.maxhp,h.hp+it.heal);SFX.heal();burst(B,62,90,'#9fe8a0',16,true);await tw(B,'heroHpD',h.hp,20);await say(`${h.first} ${it.use} et récupère ${h.hp-before} PV !`);}
+async function stages(B,tgt,ch,isFoeSide){for(const k in ch){const v=ch[k],old=tgt.st[k];tgt.st[k]=clamp(old+v,-3,3);const nm=k==='atk'?"L'attaque":'La défense';if(tgt.st[k]===old){await say(`${nm} de ${tgt.n} ne peut plus ${v>0?'augmenter':'baisser'} !`);continue;}
+  if(v>0){SFX.buff();burst(B,isFoeSide?180:62,isFoeSide?50:90,'#ffd860',14,true);}else{SFX.debuff();burst(B,isFoeSide?180:62,isFoeSide?40:80,'#8a9ae8',14);}
+  await say(`${nm} de ${tgt.n} ${v>0?(v>1?'augmente fortement':'augmente'):'baisse'} !`);}}
+async function lunge(B,isPlayer){const k=isPlayer?'heroLunge':'foeLunge',d=isPlayer?10:-10;await tw(B,k,d,6);await tw(B,k,0,6);}
+async function hit(B,tgtIsFoe,crit){(crit?SFX.crit:SFX.hit)();B.shake=crit?14:8;if(tgtIsFoe){B.foeFlash=24;burst(B,180,48,'#ffffff',12);}else{B.heroFlash=24;burst(B,62,86,'#ffffff',12);}await wait(14);}
+async function doMove(B,a,d,key,isPlayer){const m=MOVES[key],dIsFoe=isPlayer;
+  if(a.conf>0){a.conf--;await say(`${a.n} est confus…`);if(Math.random()<.5){await hit(B,!dIsFoe,false);const dm=Math.max(1,Math.round(a.maxhp*.12));a.hp=Math.max(0,a.hp-dm);await syncHp(B);await say('Il se blesse dans sa confusion !');return;}if(a.conf===0)await say(`${a.n} retrouve ses esprits.`);}
+  await say(`${a.n} utilise ${m.n} !`);await lunge(B,isPlayer);
+  if(m.k==='dmg'){if(Math.random()*100>m.acc){SFX.miss();await say(isPlayer?`${d.n} esquive l'attaque !`:`${a.n} rate son attaque !`);return;}
+    const crit=(isPlayer&&B.focus)||Math.random()<1/16;if(isPlayer&&B.focus)B.focus=false;
+    const tags=[].concat(m.tag||[]);let eff=1,why=null;if(tags.length){const ms=tags.map(tg=>[tg,(d.weak||[]).includes(tg)?2:(d.res||[]).includes(tg)?.5:1]);eff=Math.max(...ms.map(x=>x[1]));const bt=ms.find(x=>x[1]===eff)[0];if(eff!==1&&d.why)why=d.why[bt]||null;}if(d.shield){eff=.25;why=null;}const dm=calcDmg(a,d,m,crit,eff);
+    await hit(B,dIsFoe,crit||eff>1);d.hp=Math.max(0,d.hp-dm);await syncHp(B);
+    if(crit)await say('Coup critique !');if(d.shield)await say('Le Comte a toujours plus urgent : vos coups l\'effleurent à peine !');else if(eff>1){await say('C\'est super efficace !');if(why)await say(why);}else if(eff<1){await say('Ce n\'est pas très efficace…');if(why)await say(why);}
+    if(m.recoil&&a.hp>0){const rc=Math.max(1,Math.round(dm*m.recoil));a.hp=Math.max(0,a.hp-rc);await hit(B,!dIsFoe,false);await syncHp(B);await say(`${a.n} se blesse dans l'élan !`);}
+    if(m.flinch&&d.hp>0&&Math.random()<m.flinch){d.stun=true;await say(`${d.n} est entravé par les ronces !`);}if(m.foe&&d.hp>0)await stages(B,d,m.foe,dIsFoe);if(m.self&&a.hp>0)await stages(B,a,m.self,!dIsFoe);return;}
+  if(m.k==='heal'){if(m.msg)await say(m.msg);const amt=Math.round(a.maxhp*m.pct),bf=a.hp;a.hp=Math.min(a.maxhp,a.hp+amt);SFX.heal();burst(B,isPlayer?62:180,isPlayer?96:60,'#9fe8a0',18,true);await syncHp(B);await say(a.hp>bf?`${a.n} récupère ${a.hp-bf} PV !`:`${a.n} est déjà en pleine forme.`);if(m.self)await stages(B,a,m.self,!isPlayer);return;}
+  if(m.k==='nothing'){await wait(10);await say(m.msg);return;}
+  if(m.k==='ensemble'){B.ens=B.ens||new Set();if(B.ens.has(a.id)){await say('C\'est déjà fait ! Maintenant, il faut que les autres s\'y mettent.');return;}B.ens.add(a.id);SFX.heal();burst(B,62,86,'#f2c14e',22,true);await say(m.line);await say(`Esprit d'équipe : ${B.ens.size} / 3`);
+    if(B.ens.size===3&&d.shield){d.shield=false;d.weak=['precision','savoir','nature','eau','force'];d.res=[];d.st.def=-2;SFX.victory();B.shake=24;burst(B,180,46,'#ffffff',30);await say('Les trois Mouskito sont réunis ! Le temps s\'arrête. Pour une soirée, plus rien d\'autre ne compte.');await say('Le Bouclier d\'Agendas du Comte vole en éclats !');}
+    else if(d.shield)await say('Ensemble, ça commence à faire effet… Il faut que chacun s\'y mette.');return;}
+  if(m.k==='teach'){SFX.buff();burst(B,62,90,'#ffd860',20,true);await say(`${a.n} donne un cours, avec support, démonstration et exercices pratiques.`);for(const id of B.ids){const h=G.heroes[id];if(h.hp>0){h.st.atk=Math.min(3,h.st.atk+1);h.st.def=Math.min(3,h.st.def+1);}}await say(B.ids.length>1?'Toute l\'équipe a bien suivi : l\'ATT et la DÉF de chacun augmentent !':'L\'ATT et la DÉF d\'Yvain augmentent !');return;}
+  if(m.k==='buff'){await stages(B,a,m.self,!isPlayer);return;}
+  if(m.k==='debuff'){if(m.msg)await say(m.msg);await stages(B,d,m.foe,dIsFoe);return;}
+  if(m.k==='stun'){if(Math.random()<m.chance){d.stun=true;SFX.debuff();await say(m.msg?`${d.n} ${m.msg}`:`${d.n} ne sait plus quoi penser. Il risque de perdre son tour !`);}else await say(`${d.n} n'a pas l'air convaincu.`);if(m.foe)await stages(B,d,m.foe,dIsFoe);return;}
+  if(m.k==='confuse'){d.conf=2+(Math.random()*2|0);SFX.debuff();burst(B,180,40,'#f0c0ff',14);await say(`${d.n} ne sait plus s'il a raison. Il est confus !`);return;}
+  if(m.k==='focus'){B.focus=true;SFX.buff();const w=(d.weak||[]).map(t=>TAGN[t]);await say(`${a.n} recense l'espèce, son habitat et ses manies. La prochaine attaque de l'équipe sera critique !`);if(w.length)await say(`Note de terrain : ${d.n} craint ${w.join(' et ')}.`);if(m.master&&d.hp>0)await stages(B,d,{def:-1},true);return;}}
+async function syncHp(B){await Promise.all([tw(B,'foeHpD',B.foe.hp,18),tw(B,'heroHpD',B.hero().hp,18)]);}
+async function foeDown(B){const f=B.foe;SFX.faint();await tw(B,'foeSink',70,24);B.foeVis=0;
+  await say(f.key==='arbre'?'L\'Arbre-qui-Tombe s\'effondre dans un grand fracas !':f.key==='rival'?'Yvain pose un genou à terre. « Bien joué ! »':`${f.n} est K.O. !`);
+  SFX.victory();await say(`L'équipe gagne ${f.xp} points d'expérience !`);
+  for(const id of G.party){const h=G.heroes[id];if(h.hp<=0)continue;h.xp+=f.xp;while(h.xp>=xpNeed(h.lvl)){h.xp-=xpNeed(h.lvl);h.lvl++;calcStats(h,false);if(id===B.hero().id)B.heroHpD=h.hp;SFX.level();await say(`${h.first} passe au niveau ${h.lvl} ! PV, ATT et DÉF augmentent.`);}}}
+async function heroDown(B){const h=B.hero();SFX.faint();await tw(B,'heroSink',60,24);B.heroVis=0;await say(`${h.first} est K.O. !`);B.heroSink=0;}
+async function wildBattle(){const k=pick(['stylo','copeau','gobelin','echardillon','echardillon','casier','casier']);const lv=G.ch===2?7+(Math.random()*3|0):4+(Math.random()*3|0)+(G.party.length>2?1:0);await battle({foe:k,lvl:lv,env:'forest'});}
+
+/* ================= SCRIPTS ================= */
+async function give(k,n){G.bag[k]=(G.bag[k]||0)+n;SFX.item();await say(`Tu reçois ${n} × ${ITEMS[k].n} !`);}
+async function recruit(id,o){SFX.item();G.party.push(id);const h=G.heroes[id];h.lvl=Math.max(h.lvl,G.heroes[G.hero].lvl);h.xp=0;calcStats(h,true);WORLD.followers.push(ent(o.x,o.y,o.dir,id));await say(`${HEROES[id].name} rejoint l'équipe !`);if(G.party.length===3){await wait(10);await say('Bon, à trois, il nous faut un nom d\'équipe ! J\'y vais : les Trois Rabots ?','yvain');await say('Trop sérieux. Les moustiques, eux, sont petits, partout, et impossible de s\'en débarrasser. Les Trois… Mouskito ?','nicodeme');await say('Les Trois Mouskito. Je valide. Ce soir… enfin non, tout de suite.','guilhem');await say('L\'équipe est au complet. Trois apprentis, trois caractères, une seule direction : le Pont des Apprentis, à l\'est.');}}
+const FLW={f1:'le Pissenlit Légendaire',f2:"l'Edelweiss des Quais",f3:"l'Orchidée à Copeaux"};
+async function pickFlower(id){G.flowers[id]=true;SFX.item();const n=Object.keys(G.flowers).length;await say(`Tu cueilles ${FLW[id]} ! Une espèce rare. (${n}/3)`);if(!G.flags.nicoQuest)await say('Une personne passionnée de botanique serait sûrement ravie de la voir.');}
+async function pickCopeau(id){G.copeaux[id]=true;SFX.item();const n=Object.keys(G.copeaux).length;await say(`Tu trouves un Copeau d'Or ! (${n}/5) Il brille comme un vernis tout frais.`);if(n>=5)unlock('copeaux');}
+async function wakeScript(){await say('Le soleil se lève sur Vevey, la plus belle ville du monde. (Selon Yvain.)');await say('Aujourd\'hui est un grand jour : le Stage d\'Observation à l\'Atelier du Maître Rabotin !');
+  if(G.hero==='guilhem'){await say('Bon. Je pars ce matin. Enfin… oui. Vraiment, cette fois.','guilhem');}
+  if(G.hero==='nicodeme'){await say('Un stage d\'observation… Pour un futur naturaliste, c\'est pas faux comme programme.','nicodeme');}
+  if(G.hero==='yvain'){await say('J\'y vais !','yvain');await say('… Mais d\'abord, peut-être, mettre des chaussures. Et prendre ma kombucha maison.','yvain');await give('kombucha',2);}
+  await say(document.body.classList.contains('touch')?'(Croix pour te déplacer, A pour parler, MENU pour l\'équipe et les objectifs.)':'(Flèches pour te déplacer, Espace pour parler, Échap pour le menu. Maintiens X pour courir.)');}
+async function giveSandwich(){G.flags.sandwich=true;await say(`${H()} ! Tu pars à l'Atelier ? Prends ces sandwichs. Un artisan ne combat jamais le ventre vide.`,'Maman');await give('sandwich',3);await say('Et sois poli avec le Maître Rabotin. Avec le Concierge aussi, même s\'il pose des questions bizarres.','Maman');}
+async function talkMaman(){if(!G.flags.sandwich){await giveSandwich();return;}healAll();SFX.heal();await say('Tu as l\'air fatigué. Une bonne soupe, et ça repart ! (L\'équipe est soignée.)','Maman');}
+async function consoleAct(){if(G.flags.console){await say('La console. Une autre partie ? … Non. Le Maître Rabotin attend.');return;}
+  const i=await ask('Une console de jeux. Une petite partie avant de partir ?',['Juste une','Non']);if(i!==0){await say('Sage décision. Rare, mais sage.');return;}
+  await fadeTo(1,20);await say('Trois heures plus tard…');await fadeTo(0,20);G.flags.console=true;unlock('console');healAll();await say('Comme au bon vieux temps des cours de dessin technique. Tu te sens reposé, et légèrement coupable.');}
+async function tubAct(){await say('Une baignoire. Elle t\'inspire une étrange nostalgie, mêlée d\'un léger mal de tête.');}
+async function bedAct(){await say('Ton lit. Il t\'appelle. Résiste.');}
+async function shelfAct(){const t={guilhem:'Des livres d\'histoire, de philosophie et un manuel d\'anglais. Un jour, peut-être, l\'Albion…',nicodeme:'Un herbier, trois méthodes de guitare et un guide des oiseaux du Léman. Tout est annoté.',yvain:'Un catalogue de bois exotiques, un manuel de plongée et une bande dessinée très lue.'};await say(t[G.hero]);}
+async function plantAct(x){if(x===13&&!G.copeaux.c1){await say('Derrière la plante, quelque chose brille…');await pickCopeau('c1');}else await say('Une plante verte. Elle a l\'air d\'aller bien.');}
+async function benchAct(){await say('Un établi. Quelqu\'un y a gravé « G + N + Y » au canif. Tiens, tiens.');}
+async function fountainAct(){healAll();SFX.heal();await say('La fontaine de Vevey. Son eau claire redonne des forces à toute l\'équipe !');}
+async function balconAct(){unlock('balcon');await say('La Maison du Balcon. On raconte que deux apprentis observèrent un jour, depuis ce balcon, un troisième en grande conversation avec une demoiselle.');await say('Ils observèrent longtemps. Avec un sérieux tout scientifique.');
+  if(inParty('nicodeme')&&G.party.length>1)await say('Pourquoi tout le monde me regarde, d\'un coup ?','nicodeme');else await say('L\'histoire ne dit pas comment ça s\'est terminé. L\'histoire est polie.');}
+const IRMA={guilhem:'Toi, Guilhem… je vois une île brumeuse et une langue étrange. Puis des livres, des montagnes de livres, et un titre de docteur au bout du chemin. Et je vois… que tu viendras ce soir. Enfin non.',
+  nicodeme:'Toi, Nicodème… je vois des plantes. Des milliers de plantes. Et des oiseaux, des insectes, des grenouilles. Tu les compteras tous, un par un. Et des ronces… beaucoup de ronces. C\'est pas faux.',
+  yvain:'Toi, Yvain… je vois une grande Maîtrise. Fédérale, même. Je vois une salle de classe, et des apprentis qui t\'écoutent. Et je vois… l\'amour ! Ah non, pardon, c\'était un reflet sur le lac. Pourtant, quel parti ! Loyal, drôle, courageux, bâtisseur de châteaux… Les dames de Lémanie ne savent pas ce qu\'elles ratent.'};
+async function talkIrma(){unlock('irma');await say('Approchez, jeunes gens… Madame Irma lit l\'avenir dans les copeaux de bois.','Madame Irma');for(const id of G.party)await say(IRMA[id],'Madame Irma');await say('Ce sera dix francs. … Je plaisante. Le destin, lui, est gratuit.','Madame Irma');}
+async function talkEmeric(){if(inParty('yvain')){await say('Yvain ! Ce soir, on sort avec toute la bande ?','Emeric');await say('J\'y vais !','yvain');await say('… Enfin, après l\'entretien. Et après la Forêt. Et après le Concierge.','yvain');await say('Comme d\'habitude, quoi. On t\'attend au bistrot, on te garde une place.','Emeric');return;}
+  await say('Salut ! Moi c\'est Emeric. Yvain et moi, on a grandi ensemble ici, dans la plus belle ville du monde.','Emeric');await say('Tu le cherches ? Il s\'échauffe juste là, au bord du lac. Si tu l\'emmènes, ramène-le pour la soirée !','Emeric');}
+async function castleAct(){await say('Un château de sable démesuré : quatre tours, un pont-levis, des douves et un système d\'irrigation qui fonctionne vraiment.');await say('Une pancarte précise : « Bâti par Yvain. Comme dans mes jeux vidéo, mais en vrai. »');if(inParty('yvain'))await say('Il manque encore l\'aile ouest. Et un donjon. Et peut-être une cathédrale.','yvain');}
+async function talkMamie(){const miss=['yvain','guilhem','nicodeme'].filter(k=>!inParty(k));if(!miss.length){await say('Trois jeunes gens ensemble ! Ça me rappelle ma jeunesse. Enfin, je crois. J\'ai quatre-vingt-sept ans.','Mamie Josette');return;}
+  const where={guilhem:'un grand garçon à écharpe, plongé dans un livre près de la bibliothèque',nicodeme:'un barbu qui joue de la musique dans le parc, à l\'ouest',yvain:'un costaud à casquette qui fait des étirements au bord du lac'};
+  await say(`Tu cherches des compagnons ? J'ai vu ${miss.map(k=>where[k]).join(', et ')}.`,'Mamie Josette');await say('Mais je ne suis plus sûre de rien. J\'ai quatre-vingt-sept ans.','Mamie Josette');}
+async function talkPatrick(o){G.patrick++;if(G.patrick>=3)unlock('patrick');if(G.patrick===1){SFX.blower();await say('Le Concierge souffle des feuilles mortes sur le pont avec une machine assourdissante. VRRRRRRR… Il s\'arrête net.');}
+  if(G.flags.bridge){await say('Vous êtes qui ? … Ah oui. Les Mouskito. Passez, passez.','Le Concierge');return;}
+  if(G.party.length<3){const i=await ask('Vous êtes qui ?',[`Je suis ${H()}.`,'Un futur apprenti.','Personne.'],'Le Concierge');
+    const rep=[`${H()} ? Connais pas. Personne ne passe seul sur le Pont des Apprentis. Règlement, article 3, alinéa Copeau.`,'Un apprenti tout seul, c\'est juste un moustique égaré. Il en faut trois pour faire un essaim.','Personne ? Alors Personne ne passe. C\'est logique.'];
+    await say(rep[i],'Le Concierge');await say('(Il te faudrait des compagnons. Peut-être en ville ?)');return;}
+  const i=await ask('Vous êtes qui ?',['Des touristes.','Les Trois Mouskito !','Et vous, vous êtes qui ?'],'Le Concierge');
+  if(i===0){await say('Des touristes ? À Vevey ? … C\'est plausible. Mais non.','Le Concierge');return;}
+  if(i===2){await say('Moi ? Je suis le Concierge. … Mais VOUS, vous êtes qui ?','Le Concierge');return;}
+  await say('Les Trois Mouskito ? … Jamais entendu parler.','Le Concierge');await wait(20);await say('… Mais ça sonne bien. Passez.','Le Concierge');
+  G.flags.bridge=true;await walkTo(o,[[1,0],[1,0],[0,-1]]);o.dir=0;SFX.blower();await say('Le Concierge reprend sa machine. VRRRRR. Les feuilles s\'envolent vers la Forêt des Copeaux.');await say('Le Pont des Apprentis est ouvert ! Au-delà s\'étend la Forêt des Copeaux.');}
+async function questGuilhem(o){
+  if(!G.flags.gQuest){G.flags.gQuest=true;await say('Ah, l\'Atelier du Maître Rabotin ? J\'y vais ce soir… Enfin non, c\'est ce matin.','guilhem');await say('Mais avant de partir avec quelqu\'un, j\'aime bien le tester. Une énigme, puis un casse-tête. Prêt ?','guilhem');}
+  if(!G.flags.g1){while(true){const i=await ask('J\'ai deux bras mais pas de mains. Je ne bouge jamais, et pourtant je vérifie que tout est d\'équerre. Qui suis-je ?',['Une équerre','Un rabot','Le Concierge'],'guilhem');
+      if(i===0){SFX.sel();await say('Exactement. Facile pour un futur artisan.','guilhem');G.flags.g1=true;break;}
+      await say(i===2?'Le Concierge ne vérifie rien. Il demande seulement qui vous êtes.':'Un rabot a une semelle, pas des bras. Prends ton temps, la patience est la mère des assemblages.','guilhem');const r=await ask('On réessaie ?',['Oui','Plus tard'],'guilhem');if(r!==0)return;}}
+  while(true){const i=await ask('Trois planches côte à côte : chêne, hêtre et sapin. Le chêne n\'est pas à gauche. Le sapin est juste à droite du chêne. Quelle planche est à gauche ?',['Le chêne','Le hêtre','Le sapin'],'guilhem');
+    if(i===1){SFX.sel();break;}await say(i===0?'Le chêne n\'est pas à gauche, c\'est dans l\'énoncé. Relis bien.':'Si le sapin était à gauche, il ne pourrait pas être à droite du chêne. Hmm.','guilhem');const r=await ask('On réessaie ?',['Oui','Plus tard'],'guilhem');if(r!==0)return;}
+  await say('Bravo ! Patience et logique : tu feras un bon artisan.','guilhem');await say('Bon. Je viens avec toi. … Enfin non. … Enfin si ! Je viens vraiment.','guilhem');await recruit('guilhem',o);}
+async function questNico(o){
+  const n=Object.keys(G.flowers).length;
+  if(!G.flags.nicoQuest){G.flags.nicoQuest=true;await say('Salut ! Je fais l\'inventaire des espèces rares de Vevey. Il m\'en manque trois : le Pissenlit Légendaire, l\'Edelweiss des Quais et l\'Orchidée à Copeaux.','nicodeme');
+    await say('Tu vas au stage de l\'Atelier ? Moi aussi. Mais je ne pars pas avec un inventaire incomplet. Ma stratégie : tu les trouves, et je viens.','nicodeme');}
+  if(n<3){await say(`Encore ${3-n} spécimen${3-n>1?'s':''}. Le Pissenlit pousse près des maisons à l'ouest, l'Edelweiss au bord de l'eau, et l'Orchidée… derrière le savoir.`,'nicodeme');return;}
+  await say('Magnifique ! Inventaire complet. Ma stratégie était parfaite : te laisser tout faire.','nicodeme');await say('Allez, je viens avec toi. Ensemble, on fait une sacrée équipe. C\'est pas faux.','nicodeme');await recruit('nicodeme',o);}
+async function questYvain(o){
+  if(!G.flags.yMet){G.flags.yMet=true;await say('Salut ! Toi aussi tu fais le stage chez le Maître Rabotin ? Génial !','yvain');await say('Je m\'échauffais. Un petit duel amical pour se réveiller ?','yvain');}
+  const i=await ask('Alors, ce duel ?',['Allons-y !','Plus tard'],'yvain');
+  if(i!==0){await say('Pas de souci. Je reste là. Enfin, je vais peut-être nager un peu. Non, je reste là.','yvain');return;}
+  await say('J\'y vais !','yvain');
+  const r=await battle({foe:'rival',lvl:5,env:'shore',rival:true,noFlee:true,noRespawn:true,intro:'Yvain Gauvinette te défie en duel amical !'});
+  if(r==='win'){await say('Pfiou ! T\'es costaud. D\'accord, je viens avec toi !','yvain');await say('C\'est par où, l\'Atelier ? … Pas grave. J\'y vais !','yvain');await recruit('yvain',o);await say('Tiens, j\'ai apporté de la kombucha. Je la fais moi-même. Le goût est… en développement.','yvain');await give('kombucha',2);}
+  else{healAll();await say('Héhé ! Pas mal pour un échauffement. Repose-toi et reviens quand tu veux !','yvain');await say('(Ton équipe est soignée.)');}}
+async function gnAct(){if(G.flags.gn){await say('Un vieux feu de camp. Le trésor a déjà été déterré. Les souvenirs, eux, sont toujours là.');return;}
+  await say('Un ancien feu de camp. Des bâtons-épées, une cape déchirée et une carte au trésor dessinée au feutre… Les vestiges d\'un Jeu de Rôle Grandeur Nature !');
+  const i=await ask('Creuser sous les cendres ?',['Creuser','Laisser']);if(i!==0)return;SFX.dig();await wait(40);G.flags.gn=true;unlock('gn');
+  await say('Sous le feu de camp, un coffre ! Exactement là où vous l\'aviez enterré, il y a des années.');await give('cafe',2);await pickCopeau('c5');}
+async function bossAct(o){if(G.flags.boss||!o)return;o.emote='!';SFX.blip();await wait(32);o.emote=null;
+  await say('Un arbre gigantesque vacille au-dessus du sentier. Il grince. Il gémit. Il a clairement envie de tomber sur quelqu\'un.');
+  if(inParty('yvain')){await say('Un arbre… qui tombe… J\'ai déjà vécu ça. Dans un jeu vidéo. Je suis mort.','yvain');await say('Cette fois, c\'est personnel. J\'y vais !','yvain');}
+  const r=await battle({foe:'arbre',lvl:6,env:'forest',boss:true,noFlee:true,intro:'L\'Arbre-qui-Tombe vous barre la route !'});
+  if(r==='win'){G.flags.boss=true;await say('L\'Arbre-qui-Tombe… tombe. Enfin. Et du bon côté, cette fois.');if(inParty('yvain'))await say('VENGEANCE !','yvain');await say('Le chemin vers l\'Atelier du Maître Rabotin est libre !');}}
+const QUIZ=[
+ {who:'guilhem',q:'Guilhem. Quel assemblage tient sans clou ni vis, et fait la fierté de tout ébéniste ?',o:['La queue d\'aronde','Le scotch double face','La pâte à sel'],a:0,w:['','Le scotch… Je vais faire comme si je n\'avais rien entendu.','La pâte à sel. Pour un bricolage de maternelle, peut-être.'],ok:'Exactement. Patience et précision. Tu iras loin, Guilhem. Peut-être même très loin.'},
+ {who:'nicodeme',q:'Nicodème. Dans quel sens rabote-t-on une planche ?',o:['Contre le fil','Dans le sens du fil','En chantant'],a:1,w:['Contre le fil ? Tu veux des éclats jusqu\'au plafond ?','','En chantant… C\'est pas faux. Mais ce n\'est pas la réponse.'],ok:'Parfait. Tu observes la matière avant d\'agir. Un vrai naturaliste.'},
+ {who:'yvain',q:'Yvain. Avant de démarrer la scie circulaire, que fait-on ?',o:['On y va !','On vérifie la protection de la lame et on met ses lunettes','On ferme les yeux et on prie'],a:1,w:['Yvain. Non. … Non.','','La prière n\'est pas un équipement de protection.'],ok:'Bien. Le courage, c\'est aussi savoir s\'arrêter une seconde avant d\'y aller.'}];
+async function finalScene(){G.flags.final=true;const P=WORLD.player;Object.assign(P,{x:7,y:6,px:112,py:96,dir:1,moving:false});
+  WORLD.followers.forEach((f,i)=>{const[x,y]=[[6,6],[8,6]][i];Object.assign(f,{x,y,px:x*16,py:y*16,dir:1,moving:false});});
+  await fadeTo(0,24);await say('L\'Atelier du Maître Rabotin. Ça sent la colle chaude, le chêne fraîchement scié et l\'ambition.');await say('Devant vous, la porte de la salle d\'entretien. Les cœurs battent. Les barbes frémissent.');
+  G.flags.maitreOut=true;const M=objById('maitre');SFX.door();await wait(20);await walkTo(M,[[0,1],[0,1]]);M.dir=0;
+  await say('Ah ! Les candidats du stage d\'observation. Vous avez trouvé l\'atelier, c\'est déjà un bon début. Beaucoup se perdent. Ou tombent sur le Concierge.','Maître Rabotin');
+  await say('Je vous présente mon collègue, Maître Varlope. Je lui parle de tout. Absolument tout.','Maître Rabotin');await say('Absolument tout.','Maître Varlope');await say('Avant l\'entretien d\'engagement, une petite épreuve. Une question pour chacun.','Maître Rabotin');
+  for(const q of QUIZ){while(true){const i=await ask(q.q,q.o,'Maître Rabotin');if(i===q.a){SFX.sel();await say(q.ok,'Maître Rabotin');break;}SFX.bump();await say(q.w[i],'Maître Rabotin');const vk=(G.varl=(G.varl||0)+1);await say(['Bon. Je vais en parler à Maître Varlope.','Varlope ! Viens voir. Tu ne vas pas le croire.','Je note. Et j\'en parlerai à Varlope.'][vk%3],'Maître Rabotin');await say(['Il m\'en a déjà parlé.','J\'arrive. Je n\'y crois déjà pas.','Je suis au courant. Il m\'a déjà prévenu en passant.'][vk%3],'Maître Varlope');}}
+  await say('Hmm. Un patient, un stratège et un fonceur. Vous êtes très différents…','Maître Rabotin');await say('Et c\'est exactement ce qu\'il faut à un atelier. Vous êtes engagés. Tous les trois !','Maître Rabotin');SFX.victory();await wait(60);
+  G.flags.patrickAtelier=true;SFX.door();await wait(20);P.dir=0;WORLD.followers.forEach(f=>f.dir=0);await wait(16);
+  await say('Vous êtes qui ?','Le Concierge');await say('LES TROIS MOUSKITO !','Les Trois Mouskito');await say('… Jamais entendu parler.','Le Concierge');await wait(30);
+  await fadeTo(1,40);await cinematic(EPI_PAGES);await fadeTo(1,20);FETE.t=0;FETE.ch=1;markDone(1);scene=FETE;await fadeTo(0,30);}
+const EPI_PAGES=[
+ {v:'trio',t:'Ainsi naquit la Confrérie des Trois Mouskito.'},
+ {v:'lake',t:'Les années passèrent. Les copeaux aussi.'},
+ {v:'guilhem',t:'Guilhem traversa la mer jusqu\'en Albion pour en dompter la langue. Il revint, conquit deux maturités, puis gravit la montagne du savoir jusqu\'au titre de docteur ès créativité.'},
+ {v:'nicodeme',t:'Nicodème décrocha à son tour sa maturité, puis un master en biologie. Il apprit les secrets du vivant et veilla sur le Jardin des Plantes.'},
+ {v:'nicodeme',t:'Puis il fonda la Guilde du Viréo avec deux complices, Mélisande d\'Achour et Lætitia Lichen : trois biologistes qui recensent chaque fleur, chaque triton et chaque castor de Lémanie. Trois, évidemment.'},
+ {v:'yvain',t:'Yvain rejoignit l\'atelier de son père, obtint le Brevet puis la Maîtrise Fédérale, suivit 180 heures de formation pédagogique et devint enseignant au CEPV, le grand formateur des jeunes apprentis. Sans jamais cesser d\'y aller.'},
+ {v:'yvain',t:'Le soir venu, il bâtissait des cités fabuleuses dans des mondes virtuels, ou faisait la fête avec ses amis d\'enfance jusqu\'au bout de la nuit.'},
+ {v:'trio',t:'Un jour, Guilhem appela ses deux compagnons à ses côtés, à l\'Académie de Lémanie. Yvain finit par retourner vers ses apprentis. Nicodème, lui, y garde encore un pied.'},
+ {v:'trio',t:'Leurs chemins se séparèrent parfois, sans jamais se perdre : plongées dans la Mer Rouge, nuits en haute montagne, parties endiablées jusqu\'à l\'aube…'},
+ {v:'shadow',t:'Mais loin de là, au sommet d\'une tour de dossiers, d\'agendas et de tampons, le Comte Chronophage, Dévoreur d\'Agendas, observait la Confrérie…'},
+ {v:'shadow',t:'« Trois Mouskito… Je leur volerai chaque soirée, chaque week-end, chaque partie. Voyons combien de temps ils tiendront ensemble. »'},
+ {v:'shadow',t:'Autour de lui, ses lieutenants attendaient leurs ordres. L\'un d\'eux, le Baron du Miroir, n\'écoutait pas : il admirait son reflet.'},
+ {v:'lake',t:'Mais ceci… est une autre histoire.'}];
+const FETE={t:0,fw:[],
+  update(){this.t++;if(this.t%46===0){const x=30+Math.random()*180,y=20+Math.random()*50,c=pick(['#f2c14e','#ff6a6a','#7ad0ff','#b0ff8a','#ff9af0']);for(let i=0;i<34;i++){const a=i/34*Math.PI*2,s=.6+Math.random()*1.1;this.fw.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:46+Math.random()*20,c});}SFX.boom();}
+    if(this.t>90&&pressed.has('a')){SFX.sel();run(async()=>{await fadeTo(1,30);scene=TITLE;await fadeTo(0,30);});}},
+  draw(g){const sky=['#0d0b26','#15123a','#1e1a4e','#2a2462'];sky.forEach((c,i)=>{g.fillStyle=c;g.fillRect(0,i*24,SW,24);});const r=rng(3);for(let i=0;i<50;i++){g.fillStyle='#d8d8ff';g.fillRect(r()*SW|0,r()*80|0,1,1);}
+    for(let i=this.fw.length-1;i>=0;i--){const p=this.fw[i];p.x+=p.vx;p.y+=p.vy;p.vy+=.02;p.vx*=.985;p.l--;if(p.l<=0){this.fw.splice(i,1);continue;}g.fillStyle=p.l>12?p.c:'#ffffff';g.fillRect(p.x|0,p.y|0,1+(p.l>30),1+(p.l>30));}
+    const roofs=[[0,70,40,30],[38,64,30,36],[66,74,44,26],[108,60,36,40],[142,70,40,30],[180,62,34,38],[212,72,28,28]];roofs.forEach(([x,y,w,h],i)=>{g.fillStyle='#120e24';g.fillRect(x,y,w,h+60);g.fillStyle='#1c1634';g.fillRect(x+2,y-6,w-4,6);for(let j=0;j<3;j++){g.fillStyle=(i+j)%2?'#f2c14e':'#c88a2e';g.fillRect(x+5+j*11,y+10,5,6);}});
+    g.fillStyle='#3a3046';g.fillRect(0,110,SW,50);for(let x=0;x<SW;x+=8)for(let y=112;y<SH;y+=6){g.fillStyle='#463a54';g.fillRect(x+((y/6)%2)*4,y,6,4);}
+    for(let x=0;x<SW;x+=10){const y=92+Math.round(Math.sin(x/38)*4);g.fillStyle='#8a7a6a';g.fillRect(x,y,10,1);g.fillStyle=['#e0503c','#f2c14e','#4a8ae0','#5ac45c'][(x/10)%4];g.fillRect(x+2,y+1,6,2);g.fillRect(x+3,y+3,4,2);g.fillRect(x+4,y+5,2,1);}
+    const ids=['yvain','guilhem','nicodeme'];ids.forEach((k,i)=>{const e=ent(0,0,0,k);e.px=84+i*28;e.py=118;e.hop=-Math.round(Math.abs(Math.sin(this.t/9+i*1.1))*6);e.moving=true;e.prog=(this.t%16)/16;e.stepN=Math.floor(this.t/16)+i;drawEnt(g,e,0,0);});
+    const pa=ent(0,0,2,this.ch===4?'serveur':'patrick');pa.px=194;pa.py=122;drawEnt(g,pa,0,0);},
+  ui(){D.font=PS(44);D.textAlign='center';D.lineJoin='round';D.lineWidth=12;D.strokeStyle='#1a0c2a';for(const[s,y]of(this.ch===4?[['À DEMAIN !',160]]:[['VIVE LA SUITE',120],['DES AVENTURES !',186]])){D.strokeText(s,480,y);D.fillStyle='#8a4a1a';D.fillText(s,484,y+4);D.fillStyle=C.gold;D.fillText(s,480,y);}D.textAlign='left';
+    txt(this.ch===4?'La Légende des Trois Mouskito · Fin':this.ch===2?'Fin du Chapitre II':'Fin du Chapitre I',480,236,F_UI,'#f4ecd8','#0a0814','center');
+    if(this.t%240>120){D.fillStyle='#fbf7ec';rr(700,372,230,54,10);D.fill();D.beginPath();D.moveTo(780,426);D.lineTo(770,446);D.lineTo(800,426);D.fill();txt(this.ch===4?'À demain !':'Vous êtes qui ?',815,408,F_SM,C.text,null,'center');}
+    const mins=Math.max(1,Math.round((Date.now()-G.start)/60000));D.fillStyle='rgba(10,8,20,.72)';D.fillRect(0,566,960,74);
+    txt(this.ch===4?'Un jeu développé par la Compagnie des Dindons   ·   Merci d\'avoir joué !':this.ch===2?`Temps : ${mins} min   ·   Sceaux du Temps : 3/3   ·   Prochain chapitre : La Grande Bleue`:`Temps : ${mins} min   ·   Copeaux d'Or : ${Object.keys(G.copeaux).length}/5   ·   Succès : ${Object.keys(G.ach).length}/${Object.keys(ACH).length}`,480,602,F_SM,'#f4ecd8',null,'center');
+    if(this.t>90&&(T>>5)%2)txt('ENTRÉE : retour au titre',480,630,F_XS,'#a8a0c8',null,'center');}};
+
+/* ================= CHAPITRE II ================= */
+async function titleMenu(){const done=getDone(),s2=loadSave(2),s3=loadSave(3),st=n=>done.includes(n)?'  ★':'';
+  const opts=[['Chapitre I · Le Stage d\'Observation'+st(1),'c1'],['Chapitre II · Le Chalet des Hauts'+st(2),'c2'],['Chapitre III · La Grande Bleue'+st(3),'c3'],['Épilogue · Au Milan'+st(4),'c4']];if(s2)opts.push(['Continuer le Chapitre II','s2']);if(s3)opts.push(['Continuer le Chapitre III','s3']);
+  const i=await menu({items:opts.map(o=>({l:o[0]})),x:150,y:250,w:660});if(i<0)return;const k=opts[i][1];
+  const pages={c1:INTRO_PAGES,c2:CH2_PAGES,c3:CH3_PAGES}[k];const mode={c1:1,c2:2,c3:3,c4:4}[k];
+  if(mode){await fadeTo(1,24);if(pages){await cinematic(pages);await fadeTo(1,20);}SELECT.mode=mode;scene=SELECT;SELECT.i=0;await fadeTo(0,20);return;}
+  const sv=k==='s2'?s2:s3;await fadeTo(1,24);G=sv.G;G.start=Date.now();buildMaps();WORLD.load(sv.map,sv.x,sv.y,sv.dir);scene=WORLD;await fadeTo(0,24);await say('Partie reprise. Le Comte n\'a qu\'à bien se tenir.');}
+const CH2_PAGES=[
+ {v:'lake',t:'Chapitre II. Des années plus tard…'},
+ {v:'trio',t:'Les Trois Mouskito avaient grandi. Chacun suivait sa voie : la thèse pour Guilhem, la Guilde du Viréo pour Nicodème, les apprentis pour Yvain.'},
+ {v:'shadow',t:'Et le Comte Chronophage tenait parole. Chaque soirée prévue s\'évanouissait. « Ce soir ? … Enfin non. »'},
+ {v:'trio',t:'Un jour pourtant, la même invitation parvint aux trois : « Week-end au chalet de Nico, sur les hauts de Vevey, au Mont-Pèlerin. Aucune excuse acceptée. »'},
+ {v:'shadow',t:'« Qu\'ils essaient, ricana le Comte. J\'ai scellé le sentier de trois Sceaux du Temps. Chacun devra briser le sien… seul. »'}];
+const CH2_END=[
+ {v:'trio',t:'Le Comte Chronophage était vaincu. Pour cette fois, du moins.'},
+ {v:'trio',t:'Cette nuit-là, au coin du feu, la fondue refroidissait doucement et les souvenirs remontaient, un à un…'},
+ {v:'lake',t:'La suite au prochain chapitre : La Grande Bleue.'}];
+async function startCh2(id){newGame2(id);await fadeTo(1,24);const cp=card('CHAPITRE II','Le Chalet des Hauts');await fadeTo(0,16);await cp;await fadeTo(1,20);WORLD.load('hauts',19,27,1);scene=WORLD;await fadeTo(0,24);
+  await say('Le Mont-Pèlerin, sur les hauts de Vevey. Tout là-haut, le chalet où Nicodème a grandi. Et entre vous et lui, la barrière des trois Sceaux du Temps.');
+  await say('Chacun devra briser son Sceau seul : Guilhem devant l\'Académie à l\'ouest, Nicodème au Marais du Jorat à l\'est, Yvain devant l\'Atelier Gauvinette.');
+  await say('On y va ensemble. Enfin… chacun son tour, d\'abord.',id);saveGame();}
+function objective2(){const f=G.flags,miss=[];
+  if(!f.sealG)miss.push('Guilhem doit vaincre la Paperasse Infinie devant l\'Académie, à l\'ouest');
+  if(!f.sealN)miss.push(f.inventaireOK?'Nicodème doit affronter la Reine Renouée au nord-est du marais':'Nicodème doit aider la Guilde du Viréo, au Marais du Jorat à l\'est');
+  if(!f.sealY)miss.push(f.yQuiz?'Yvain doit passer le Jury Fédéral devant l\'Atelier Gauvinette':'Yvain doit parler à son père, près de l\'Atelier Gauvinette');
+  if(miss.length)return'Objectif : briser les Sceaux du Temps. '+miss.join('. ')+'.';
+  if(!f.baron)return'Objectif : franchir la barrière au nord et monter le sentier. Quelqu\'un s\'y admire déjà.';
+  return'Objectif : rejoindre le chalet de Nicodème, tout en haut du sentier.';}
+async function capiteAct(){await say('La capite : une petite maisonnette en bois, à côté du chalet.');await say('On y mangeait de temps en temps avec mes parents. Les meilleurs repas du Mont-Pèlerin.','nicodeme');if(inParty('yvain'))await say('J\'y vais, si on y remange un jour !','yvain');}
+const SUTRA=['« Gate, gate, pāragate, pārasaṃgate, bodhi svāhā… »','« Om mani padme hum… »'];
+const SAGESSE=['Le temps ne se possède pas. Il se partage.','Le Comte croit voler vos soirées. Mais un instant vécu ensemble ne se vole pas.','Chaque pas sur le chemin est déjà le chemin. Même les pas qui montent vers un chalet.','Ne courez pas après le temps. Marchez avec lui.'];
+async function moineAct(){G.moine=(G.moine||0)+1;await say(`Un moine marche lentement sur le sentier en récitant des soutras : ${SUTRA[G.moine%2]}`);await say(SAGESSE[(G.moine-1)%SAGESSE.length],'Le moine');if(G.moine===1&&inParty('yvain'))await say('… J\'y vais. Doucement, cette fois.','yvain');}
+function patrolStep(o){const W_=WORLD;o.pi=o.pi||0;let[tx,ty]=o.patrol[o.pi];if(o.x===tx&&o.y===ty){o.pi=(o.pi+1)%o.patrol.length;[tx,ty]=o.patrol[o.pi];}
+  const occ=(x,y)=>W_.solid(x,y)||W_.map.objs.some(q=>q!==o&&vis(q)&&q.kind!=='deco'&&q.x===x&&q.y===y)||W_.map.objs.some(q=>q!==o&&vis(q)&&q.tiles&&q.tiles.some(([a,b])=>a===x&&b===y))||[W_.player,...W_.followers].some(e=>e.x===x&&e.y===y);
+  const opts=[];if(tx!==o.x)opts.push([Math.sign(tx-o.x),0]);if(ty!==o.y)opts.push([0,Math.sign(ty-o.y)]);
+  for(const[dx,dy]of opts){if(!occ(o.x+dx,o.y+dy)){o.dir=dx<0?2:dx>0?3:dy<0?1:0;startMove(o,dx,dy,1);return;}}}
+async function sealGet(k,id){G.flags['seal'+k]=true;SFX.item();await say(`${HEROES[id].first} brise le Sceau du Temps !`);if(!G.heroes[id].moves.includes(L2[id])){learnL2(id);SFX.level();await say(`Le Sceau libère un pouvoir caché. ${HEROES[id].first} apprend une nouvelle attaque : ${MOVES[L2[id]].n} !`);}if(evolve(id)){SFX.level();await say(EVO[id][2]);}const n=['sealG','sealN','sealY'].filter(s=>G.flags[s]).length;healAll();
+  if(n===3){G.flags.gate=true;await say('Les trois Sceaux se brisent dans un éclat doré. Au nord, la barrière des Hauts s\'ouvre !');}else await say(`Sceaux brisés : ${n} / 3. (L'équipe se repose et récupère.)`);saveGame();}
+async function gateAct(){const n=['sealG','sealN','sealY'].filter(s=>G.flags[s]).length;await say(`Une barrière scellée par trois Sceaux du Temps. Sceaux brisés : ${n} / 3.`);}
+async function soloPrep(id){const h=G.heroes[id];h.hp=h.maxhp;await say(`Les deux autres reculent. ${HEROES[id].first} reprend son souffle et s'avance seul.`);}
+async function quizLoop(qs,sp){for(const q of qs){while(true){const i=await ask(q.q,q.o,sp);if(i===q.a){SFX.sel();if(q.ok)await say(q.ok,sp);break;}SFX.bump();await say(q.w[i],sp);}}}
+async function paperasseAct(){
+  await say('Une pile de documents vivante bloque l\'entrée de l\'Académie : la Paperasse Infinie, premier lieutenant du Comte !');
+  await say('« Formulaire B-12, annexe 4, contresigné en triple exemplaire… Seul le docteur peut passer. Mais d\'abord, prouve que tu en es un. »','Paperasse Infinie');
+  if(!G.flags.gQuiz){await quizLoop([
+    {q:'Combien de fois faut-il relire sa bibliographie ?',o:['Une fois, ça suffit','Jusqu\'à ce qu\'elle te relise','Jamais, c\'est le travail du jury'],a:1,w:['Une fois ? Tu as donc une coquille à la page 212.','','Le jury l\'a lue. Il a trouvé la coquille de la page 212.'],ok:'Exact. Et ensuite, on la relit encore une fois.'},
+    {q:'Un membre du jury pose une question à laquelle tu ne sais pas répondre. Que dis-tu ?',o:['« Excellente question, qui ouvre des perspectives »','« J\'y vais ! »','« Je viens ce soir… enfin non »'],a:0,w:['','Ça, c\'est la réponse d\'Yvain.','Ça, c\'est ta réponse aux invitations. Pas au jury.'],ok:'Parfait. La réponse universelle du docteur.'}],'Paperasse Infinie');G.flags.gQuiz=true;}
+  await say('« Les autres, derrière la ligne jaune. Le candidat se présente seul. »','Paperasse Infinie');await say('Je viens. Et cette fois, sans « enfin non ».','guilhem');await soloPrep('guilhem');
+  const r=await battle({foe:'paperasse',lvl:8,env:'mountain',solo:'guilhem',noFlee:true,intro:'La Paperasse Infinie se dresse devant Guilhem !'});
+  if(r==='win'){await say('La Paperasse Infinie s\'effondre en une pluie de formulaires… tous correctement remplis.');await sealGet('G','guilhem');}}
+async function pereAct(){
+  if(G.flags.yQuiz){await say(G.flags.sealY?'Maîtrise Fédérale, et bientôt enseignant au CEPV ! Je l\'ai toujours su. Enfin, presque toujours.':'Le Jury est sévère, mais juste. Comme moi. Enfin, presque.','Maître Gauvinette');return;}
+  await say('Mon fils. Le Jury Fédéral t\'attend devant l\'atelier. Avant d\'y aller, parce que je te connais, rappelle-moi l\'ordre des opérations.','Maître Gauvinette');
+  await quizLoop([
+    {q:'Première étape ?',o:['Tracer','Vernir','Faire la fête'],a:0,w:['','Vernir une planche brute ? On en reparlera.','Après. Toujours après.']},
+    {q:'Ensuite ?',o:['Assembler','Scier','Poncer'],a:1,w:['Assembler des pièces qui ne sont pas coupées, c\'est ambitieux.','','Poncer une planche non sciée, c\'est du sport, pas de l\'ébénisterie.']},
+    {q:'Et après avoir scié ?',o:['Vernir','Raboter','Y aller'],a:1,w:['Trop tôt !','','Yvain…']}],'Maître Gauvinette');
+  await say('Puis on assemble, on ponce, on vernit. Bien. Tu es prêt.','Maître Gauvinette');G.flags.yQuiz=true;}
+async function juryAct(){
+  if(!G.flags.yQuiz){await say('Le Jury Fédéral siège devant l\'Atelier Gauvinette. « Nous ne recevons que les candidats préparés. » Le maître de l\'atelier, juste à côté, aura peut-être un dernier conseil.');return;}
+  await say('« Candidat Gauvinette. Nous allons évaluer votre maîtrise. Vos camarades sont priés de quitter la salle. »','Jury Fédéral');await say('J\'y vais !','yvain');await soloPrep('yvain');
+  const r=await battle({foe:'jury',lvl:8,env:'mountain',solo:'yvain',noFlee:true,intro:'Le Jury Fédéral examine Yvain !'});
+  if(r==='win'){await say('« Maîtrise Fédérale : accordée, avec les félicitations du jury. »','Jury Fédéral');await say('J\'y suis allé. Et j\'en suis revenu ! Prochaine étape : la formation pédagogique, et après, j\'enseigne au CEPV.','yvain');await sealGet('Y','yvain');}}
+async function emeric2Act(){await say('Yvain ! Ce soir, on sort avec la bande ?','Emeric');await say('J\'y vais ! … Ah non. Ce week-end, c\'est le Chalet. Avec ces deux-là.','yvain');await say('Les Mouskito ? Alors je te les laisse. Mais la semaine prochaine, tu es à nous.','Emeric');}
+const SPECIES={sp1:'un Triton crêté',sp2:'un Orvet fragile',sp3:'des traces de Castor'};
+async function pickSpecies(id){G.flags[id]=true;SFX.item();const n=['sp1','sp2','sp3'].filter(k=>G.flags[k]).length;await say(`Nicodème note ${SPECIES[id]} dans son carnet de terrain ! (${n}/3)`);
+  if(id==='sp1')await say('Ventre orange, crête dentelée. Magnifique.','nicodeme');if(id==='sp2')await say('Ce n\'est pas un serpent, c\'est un lézard sans pattes. Personne ne me croit jamais.','nicodeme');if(id==='sp3')await say('Des copeaux de saule rongés… Au fond, le castor est un collègue ébéniste.','nicodeme');}
+async function guildeAct(){
+  if(G.flags.sealN){await say('Le marais respire à nouveau. Merci, les Mouskito !','Lætitia');return;}
+  if(!G.flags.guilde){G.flags.guilde=true;
+    await say('Nicodème ! Enfin ! La Reine Renouée a envahi le Marais du Jorat. Elle étouffe tout : les roseaux, les tritons, les orvets…','Mélisande');
+    await say('Avant de la combattre, la règle de la Guilde du Viréo : les données d\'abord. Il nous faut trois observations : un Triton crêté, un Orvet fragile et des traces de Castor.','Lætitia');
+    await say('Trois espèces, trois membres de la Guilde… et trois Mouskito. Ce chiffre nous poursuit.','Mélisande');await say('C\'est pas faux.','nicodeme');return;}
+  const n=['sp1','sp2','sp3'].filter(k=>G.flags[k]).length;
+  if(n<3){await say(`Encore ${3-n} observation${3-n>1?'s':''}. Le triton aime le bord des étangs, l'orvet se cache dans les herbes hautes, et le castor laisse des copeaux près de l'eau.`,'Lætitia');return;}
+  if(!G.flags.inventaireOK){G.flags.inventaireOK=true;await say('Inventaire complet ! Avec ces données, on sait exactement où la Reine est vulnérable.','Mélisande');await say('Elle se cache au nord-est du marais. Nicodème, c\'est ton terrain. Tu devras l\'affronter seul : elle ne craint que celui qui la connaît.','Lætitia');return;}
+  await say('La Reine Renouée est au nord-est du marais. Bonne chance, Nicodème !','Lætitia');}
+async function renoueeAct(){
+  if(!G.flags.inventaireOK){await say('La Reine Renouée étend ses rhizomes dans tout le marais. Sans données, impossible de savoir où frapper. La Guilde du Viréo, près du chemin, saura peut-être quoi faire.');return;}
+  await say('« Ce marais est à moi. Mes rhizomes vont jusqu\'à Lausanne ! »','Reine Renouée');await say('Fallopia japonica. Invasive, tenace… et pas du tout la bienvenue ici.','nicodeme');await soloPrep('nicodeme');
+  const r=await battle({foe:'renouee',lvl:8,env:'forest',solo:'nicodeme',noFlee:true,intro:'La Reine Renouée se dresse devant Nicodème !'});
+  if(r==='win'){await say('La Reine Renouée se fane. Les tritons ressortent timidement des roseaux.');await say('Prochaine mission pour la Guilde : les ronces. Ma spécialité.','nicodeme');await sealGet('N','nicodeme');}}
+async function baronAct(){G.flags.baronTalk=true;SFX.door();
+  await say('Halte ! Vous vous trouvez devant le Baron du Miroir. Lieutenant préféré du Comte. Enfin, préféré par moi.','Baron du Miroir');
+  await say('Le Comte m\'a confié une mission capitale : vous arrêter. Je m\'en occupe. … Enfin, je m\'en occuperai. Là, je suis assez occupé.','Baron du Miroir');
+  await say('Et puis entre nous, ce chalet, ces aventures… c\'est une affaire d\'hommes. Les femmes, de toute façon…','Baron du Miroir');await wait(20);
+  await say('… recensent les espèces de tout le canton pendant que vous parlez à votre reflet. Vous disiez ?','Lætitia');
+  await say('Je… disais… que j\'adore la biodiversité. Évidemment. D\'ailleurs, c\'était mon idée.','Baron du Miroir');await say('Comme d\'habitude.','Mélisande');
+  await say('Assez ! Admirez plutôt le Baron. Puis repartez.','Baron du Miroir');
+  const r=await battle({foe:'baron',lvl:9,env:'mountain',noFlee:true,intro:'Le Baron du Miroir vous barre le sentier !'});
+  if(r==='win'){G.flags.baron=true;await say('Vous n\'avez pas gagné. C\'est moi qui ai décidé de vous laisser passer. Notez-le.','Baron du Miroir');await say('Enfin, je le noterai. Demain.','Baron du Miroir');await say('Le Baron s\'éloigne en admirant son reflet dans chaque flaque. Le sentier du Chalet est libre !');saveGame();}}
+async function chaletScene(){const P=WORLD.player;Object.assign(P,{x:7,y:5,px:112,py:80,dir:1,moving:false});WORLD.followers.forEach((f,i)=>{const[x,y]=[[6,5],[8,5]][i]||[7,6];Object.assign(f,{x,y,px:x*16,py:y*16,dir:1,moving:false});});healAll();
+  await fadeTo(0,24);
+  if(!G.flags.chaletSeen){G.flags.chaletSeen=true;
+    await say('Le chalet où Nicodème a grandi, au Mont-Pèlerin. Ça sent le bois, la fondue et les vieux souvenirs.');await say('Bienvenue à la maison. Rien n\'a changé, à part la taille des lits. On en a passé, des moments, ici.','nicodeme');
+    await say('Vous vous souvenez de la Mer Rouge ? Mon brevet de plongée ! Avec Eric, on n\'arrêtait pas de rire de ce monsieur qui nous suivait partout sous l\'eau.','yvain');
+    await say('Je m\'en souviens. Je m\'étais un peu énervé… Bon, au fond, je riais aussi. Un peu.','guilhem');
+    await say('Et la semaine de surf ! Deux heures sur l\'eau et j\'avais le mal de mer. J\'ai fait un très bel inventaire de la plage.','nicodeme');
+    await say('Et le moniteur qui nous criait « Allez, les spaghettis ! » dès qu\'on montait sur la planche.','yvain');
+    await say('Sans oublier la bataille d\'algues. Et vos ronflements. Toute la semaine. En stéréo.','guilhem');await say('C\'est pas faux.','nicodeme');
+    await say('Et nos nuits en haute montagne, et les parties jusqu\'à l\'aube… Ce soir, je viens. Et je reste.','guilhem');
+    await say('J\'ai même apporté de la kombucha !','yvain');await say('… On va peut-être commencer par la fondue.','nicodeme');
+    await say('Soudain, l\'horloge du chalet s\'arrête. Un vent glacé souffle les bougies.');}
+  G.flags.comteIn=true;SFX.door();P.dir=0;WORLD.followers.forEach(f=>f.dir=0);await wait(20);
+  await say('Une soirée entière ? Ensemble ? Sans réunion, sans mail, sans délai ? INACCEPTABLE !','Comte Chronophage');
+  await say('J\'ai volé vos soirées pendant des années. Je ne vais pas vous laisser celle-ci.','Comte Chronophage');
+  await say('Alors il faudra la défendre. Tous les trois.',G.hero);
+  const r=await battle({foe:'comte',lvl:9,env:'night',final:true,noFlee:true,intro:'Le Comte Chronophage vous défie !'});
+  if(r!=='win')return;
+  G.flags.final2=true;await say('Impossible… Ils ont trouvé… une date commune…','Comte Chronophage');await say('Le Comte Chronophage se dissout dans un nuage de post-it.');
+  await say('L\'horloge repart. Mais pour cette nuit, au chalet du Mont-Pèlerin, le temps n\'a plus d\'importance.');await wait(30);
+  markDone(2);clearSave();await fadeTo(1,40);await cinematic(CH2_END);await fadeTo(1,20);FETE.t=0;FETE.ch=2;scene=FETE;await fadeTo(0,30);}
+
+/* ================= CHAPITRE III & ÉPILOGUE ================= */
+const CH3_PAGES=[
+ {v:'trio',t:'Chapitre III. Au coin du feu, dans le chalet de Nicodème au Mont-Pèlerin, les Mouskito se racontèrent leurs souvenirs de mer.'},
+ {v:'lake',t:'La Mer Rouge et le brevet de plongée d\'Yvain. La semaine de surf. Les algues. Les ronflements…'},
+ {v:'trio',t:'Et comme dans toute bonne légende, les souvenirs prirent vie.'},
+ {v:'shadow',t:'Mais quelque part, un lieutenant du Comte attendait son heure : le Dimanche Soir, Fossoyeur des Vacances.'}];
+const CH3_END=[
+ {v:'trio',t:'La semaine se termina, comme toutes les semaines. Mais certaines semaines ne finissent jamais vraiment.'},
+ {v:'trio',t:'Des années plus tard, il suffit encore d\'un mot pour que les trois éclatent de rire : « spaghettis ».'},
+ {v:'lake',t:'Depuis, les Mouskito ont un rituel. Le Comte peut bien voler leurs semaines : certains soirs, une table pour trois les attend…'}];
+async function startCh3(id){newGame2(id);G.ch=3;for(const k of G.party){const h=G.heroes[k];h.lvl=11;h.xp=0;calcStats(h,true);learnL2(k);evolve(k);}G.bag={sandwich:3,kombucha:3,cafe:2};
+  await fadeTo(1,24);const cp=card('CHAPITRE III','La Grande Bleue');await fadeTo(0,16);await cp;await fadeTo(1,20);WORLD.load('mer',19,9,0);scene=WORLD;await fadeTo(0,24);
+  await say('Les Rivages du Sud. À gauche, le centre de plongée de la Mer Rouge. À droite, l\'école de surf. Au milieu, le bungalow.');
+  await say('La géographie est approximative. Les souvenirs, eux, sont exacts.');saveGame();}
+function objective3(){const f=G.flags;
+  if(!f.padi)return'Objectif : Yvain doit passer son brevet de plongée. Le moniteur attend au centre de plongée, à gauche.';
+  if(!f.surf)return'Objectif : prendre une leçon de surf avec le moniteur, devant l\'école à droite.';
+  if(!f.algues)return'Objectif : il paraît qu\'une montagne d\'algues attend quelque part sur la plage…';
+  return'Objectif : la journée est finie. Rentrer au bungalow, au milieu.';}
+async function ericAct(){if(G.flags.padi){await say('Un examinateur ! Il était examinateur ! Je ne m\'en remettrai jamais.','Eric');return;}
+  await say('Salut les Mouskito ! Yvain passe son brevet aujourd\'hui. Et vous avez vu le monsieur en combinaison ? Il nous suit depuis ce matin !','Eric');}
+async function monsieurAct(o){G.monsieur=(G.monsieur||0)+1;await say('Un monsieur en combinaison vous observe fixement. Il ne dit rien.');
+  if(G.monsieur===1){await say('Il nous suit depuis ce matin ! Même sous l\'eau !','Eric');await say('Hahaha ! Regarde, il prend des notes !','yvain');await say('Arrêtez, il va vous entendre…','guilhem');await say('(… Bon, c\'est vrai que c\'est un peu drôle.)','guilhem');}
+  else await say(pick(['Le monsieur note quelque chose dans un carnet étanche.','Le monsieur ajuste son masque. Il vous regarde toujours.','Eric et Yvain pouffent de rire. Guilhem soupire… puis pouffe aussi.']));
+  const spots=[[11,12],[4,13],[14,10],[9,14],[26,11]];const[x,y]=spots[G.monsieur%spots.length];Object.assign(o,{x,y,px:x*16,py:y*16});}
+async function corailAct(){if(G.flags.padi){await say('Brevet validé ! Bienvenue parmi les plongeurs, Yvain.','Moniteur Corail');return;}
+  await say('Bienvenue au centre de plongée de la Mer Rouge ! Yvain, c\'est le grand jour : ton brevet de plongée.','Moniteur Corail');
+  if(!G.flags.padiQuiz){await quizLoop([
+    {q:'Sous l\'eau, que signifie le pouce levé ?',o:['Tout va bien','On remonte','J\'y vais !'],a:1,w:['Non ! Pour dire que tout va bien, on fait un rond avec le pouce et l\'index. Le pouce levé, c\'est « on remonte ».','','Sous l\'eau, « J\'y vais » n\'est pas un signe officiel.'],ok:'Exact. Le pouce levé, c\'est la remontée.'},
+    {q:'Avant de plonger, on vérifie l\'équipement de qui ?',o:['Le sien seulement','Le sien et celui de son binôme','Celui du monsieur qui nous suit'],a:1,w:['Et ton binôme, alors ?','','Lui, il sait ce qu\'il fait. Crois-moi.'],ok:'Parfait. On ne plonge jamais seul, et on vérifie toujours son binôme.'},
+    {q:'Que fait-on si l\'on perd son binôme sous l\'eau ?',o:['On le cherche une minute, puis on remonte','On continue seul','On y va !'],a:0,w:['','Jamais seul !','Yvain…'],ok:'Bien. On cherche brièvement, puis on se retrouve en surface.'}],'Moniteur Corail');G.flags.padiQuiz=true;}
+  await say('Théorie validée. Maintenant, la pratique. Une murène garde le récif. Tu plonges… et tu gardes ton calme.','Moniteur Corail');await say('J\'y vais ! … Calmement.','yvain');await soloPrep('yvain');
+  const r=await battle({foe:'murene',lvl:11,env:'underwater',solo:'yvain',noFlee:true,intro:'Une Murène Grincheuse jaillit du récif !'});
+  if(r!=='win')return;G.flags.padi=true;
+  await say('Yvain remonte, triomphant. Le mystérieux monsieur en combinaison s\'approche…');
+  await say('Brevet validé, jeune homme. Je vous suivais depuis ce matin : je suis l\'examinateur.','Le monsieur');
+  await say('Ah. … Ah.','Eric');await say('Je vous avais dit d\'arrêter de rire.','guilhem');await say('Tu riais aussi.','yvain');await say('Un peu.','guilhem');
+  SFX.item();await say('Yvain obtient son Brevet de Plongée !');healAll();saveGame();}
+async function roccoAct(){if(G.flags.surf){await say('Pas mal, les spaghettis ! Demain, je vous emmène sur les grosses vagues.','Moniteur Rocco');return;}
+  await say('Salut ! D\'habitude, je n\'entraîne que des surfeurs confirmés. Mais vous avez l\'air sympas. Allez, sur les planches, les spaghettis !','Moniteur Rocco');
+  await say('Les… spaghettis ?','guilhem');await say('Regarde-toi sur la planche et tu comprendras.','Moniteur Rocco');
+  await say('Le Grand Rouleau se lève au large. Pour le dompter, il faudra toute l\'équipe.','Moniteur Rocco');
+  const r=await battle({foe:'rouleau',lvl:11,env:'shore',malmer:true,noFlee:true,intro:'Le Grand Rouleau déferle sur les Mouskito !'});
+  if(r!=='win')return;G.flags.surf=true;await say('Le Grand Rouleau s\'écrase sur la plage, vaincu.');await say('Pas mal, les spaghettis ! Vraiment pas mal.','Moniteur Rocco');
+  await say('Demain, ça ira mieux pour moi aussi. C\'est pas faux.','nicodeme');healAll();saveGame();}
+async function alguesAct(){if(G.flags.algues){await say('Il reste quelques algues sur la plage. Et beaucoup de souvenirs.');return;}
+  const opp=pick(G.party.filter(k=>k!==G.hero)),on=HEROES[opp].first;
+  await say('Une montagne d\'algues échouées. Quelqu\'un en ramasse une poignée. Regards complices…');await say('BATAILLE D\'ALGUES !',opp);
+  let me=0,them=0;const dirs=['À gauche','Au centre','À droite'];
+  for(let r=0;r<3;r++){const a=await ask(`Manche ${r+1} sur 3. Où lancer ton algue ?`,dirs);const d=Math.random()*3|0;
+    if(a!==d){me++;SFX.hit();await say(`SPLATCH ! ${on} la reçoit en pleine figure.`);}else{SFX.miss();await say(`${on} esquive avec une grâce de spaghetti.`);}
+    const e=await ask('Une algue arrive vers toi ! Où esquiver ?',dirs);const t2=Math.random()*3|0;
+    if(e===t2){them++;SFX.hit();await say('SPLOUTCH ! En plein dans le col.');}else{SFX.miss();await say('Esquivé ! L\'algue termine sa course sur un parasol.');}}
+  await say(me>them?`Victoire ${me} à ${them} ! Tu es sacré Maître des Algues.`:me===them?`Égalité, ${me} partout. Tout le monde sent la marée.`:`Défaite ${me} à ${them}. Mais quelle défaite !`);
+  await say('Personne ne sait vraiment qui a gagné. Tout le monde a ri.');G.flags.algues=true;saveGame();}
+async function nightScene(){const P=WORLD.player;Object.assign(P,{x:7,y:4,px:112,py:64,dir:0,moving:false});WORLD.followers.forEach((f,i)=>{const[x,y]=[[5,4],[9,4]][i]||[7,5];Object.assign(f,{x,y,px:x*16,py:y*16,dir:0,moving:false});});healAll();
+  await fadeTo(0,24);
+  if(!G.flags.nightSeen){G.flags.nightSeen=true;await say('La nuit tombe sur les Rivages du Sud. Après une telle journée, tout le monde s\'écroule.');await fadeTo(.7,30);SFX.snore();
+    await say('RRRRRR… ZZZZZ… RRRRRRRR…');await say('Ils ronflent. En stéréo. Comme prévu.','guilhem');SFX.snore();await say('RRRRR… c\'est pas… faux… RRRRR…','nicodeme');await say('J\'y… vais… ZZZZ…','yvain');await fadeTo(0,30);}
+  G.flags.dimIn=true;SFX.door();await wait(20);
+  await say('Soudain, une ombre glacée traverse la chambre. Une voix murmure : « Demain… c\'est déjà dimanche soir… »');
+  await say('Je suis le Dimanche Soir, Fossoyeur des Vacances. Les valises, le réveil, les mails du lundi… Votre semaine est finie !','Dimanche Soir');
+  await say('Pas encore. Il nous reste une nuit. Et on compte bien en profiter.',G.hero);
+  const r=await battle({foe:'dimanche',lvl:12,env:'nightbeach',noFlee:true,intro:'Le Dimanche Soir surgit dans le bungalow !'});
+  if(r!=='win')return;G.flags.final3=true;
+  await say('Le Dimanche Soir recule… Il reviendra, bien sûr. Il revient toujours. Mais pas cette semaine.');await say('… Et maintenant, on peut dormir ?','nicodeme');SFX.snore();await say('RRRRRRR…','yvain');
+  markDone(3);clearSave(3);await fadeTo(1,40);await cinematic(CH3_END);await fadeTo(1,20);await epilogueIntro();}
+async function epilogueIntro(){G.ch=4;G.flags.ordered=false;G.flags.comteInv=false;const cp=card('ÉPILOGUE','Au Milan');await fadeTo(0,16);await cp;await fadeTo(1,20);WORLD.load('milan',7,8,1);scene=WORLD;await fadeTo(0,24);
+  await say('Des années plus tard. Le Comte Chronophage leur a appris une chose : une soirée, ça se protège. Alors, de temps en temps, les Mouskito se retrouvent au Milan.');
+  await say('On ne va pas plutôt au Vecchia ?','yvain');await say('C\'est pas faux… Au Vecchia, ils ont…','nicodeme');await say('Ce soir, c\'est le Milan. Et ce soir, je viens.','guilhem');
+  await say('(Commande auprès du serveur, salue les habitués, puis installe-toi à votre table.)');}
+async function startEpi(id){newGame(id);G.party=[id,...['yvain','guilhem','nicodeme'].filter(k=>k!==id)];await fadeTo(1,24);await epilogueIntro();}
+const PLATS=['Tartare du chef','Scaloppine au citron','Spaghettis'];
+async function serveurAct(){if(G.flags.ordered){await say('Ça arrive, ça arrive ! Installez-vous à votre table.','Le serveur');return;}
+  await say('Buonasera ! Trois couverts, comme d\'habitude ? Qu\'est-ce que je vous sers ?','Le serveur');G.orders={};
+  for(const id of ['yvain','guilhem','nicodeme']){const i=await ask(`Et pour ${HEROES[id].first} ?`,PLATS,'Le serveur');G.orders[id]=PLATS[i];
+    if(i===2){await say('Des spaghettis ? …','Le serveur');await say('ALLEZ, LES SPAGHETTIS !','yvain');await say('Le serveur ne comprend pas. Les trois Mouskito pleurent de rire.');}
+    else await say(i===0?'Excellent choix. Le chef le prépare au couteau, comme toujours.':'Les scaloppine au citron ! Le meilleur citron de ce côté du lac.','Le serveur');}
+  G.flags.ordered=true;await say('Parfait ! Installez-vous, ça arrive tout de suite.','Le serveur');}
+async function comteMilanAct(o){if(G.flags.comteInv){await say('Je n\'ai même pas regardé mon agenda. C\'est très étrange.','Comte Chronophage');return;}
+  await say('Le Comte Chronophage dîne seul, son agenda ouvert à côté de son assiette.');await say('Ne faites pas attention à moi. J\'ai une réunion à 21 h 30. Et une autre à 21 h 45.','Comte Chronophage');
+  const i=await ask('L\'inviter à votre table ?',['Viens avec nous !','Le laisser à son agenda']);if(i!==0){await say('Comme vous voudrez. Je suis très occupé. Très.','Comte Chronophage');return;}
+  await say('… Moi ? À votre table ? Je… je n\'ai pas le temps. Enfin… peut-être cinq minutes.','Comte Chronophage');await say('Pour la première fois, le Comte Chronophage referme son agenda.');
+  G.flags.comteInv=true;Object.assign(o,{x:9,y:6,px:144,py:96,dir:2});}
+async function sitAct(){if(!G.flags.ordered){await say('Votre table. Il faudrait d\'abord commander auprès du serveur, près du comptoir.');return;}
+  const P=WORLD.player;await fadeTo(1,20);Object.assign(P,{x:6,y:6,px:96,py:96,dir:3,moving:false});WORLD.followers.forEach((f,i)=>{const[x,y]=[[7,5],[8,5]][i]||[9,5];Object.assign(f,{x,y,px:x*16,py:y*16,dir:0,moving:false});});await fadeTo(0,20);
+  await say('Les plats arrivent. Pendant un long moment, personne ne parle. C\'est bon signe.');
+  await say('Vous savez quoi ? Ce soir, je suis venu. Pas « enfin non ». Venu.','guilhem');await say('C\'est pas faux. On devrait faire ça plus souvent.','nicodeme');await say('On devrait faire ça demain !','yvain');
+  if(G.flags.comteInv)await say('Je… je crois que je passe une bonne soirée. Ne le dites à personne.','Comte Chronophage');
+  await say('Le Comte n\'avait pas tout à fait tort : le temps file, et les soirées comme celle-ci sont rares.');await say('Mais il avait oublié une chose. Quand les Mouskito ne trouvent plus de soirée pour se retrouver… ils jouent ensemble à travers ce jeu.');
+  await say('Le temps passe. Mais ce soir, personne ne l\'a remarqué.');await wait(20);
+  await say('Au moment de partir, le serveur vous raccompagne jusqu\'à la porte, comme toujours.');SFX.victory();await say('À demain !','Le serveur');
+  markDone(4);await fadeTo(1,40);FETE.t=0;FETE.ch=4;scene=FETE;await fadeTo(0,30);}
+
+
+/* ================= MUSIQUE 8 BITS ================= */
+const MUS_VOL=.55;const MUS={cur:null,step:0,next:0,gain:null,nb:null};
+const TRACKS={
+ title:{bpm:132,lead:'C5 - G4 C5 E5 - D5 C5 | D5 - B4 G4 D5 - - . | E5 - C5 E5 G5 - F5 E5 | D5 - - - G4 . . . | A4 - C5 F5 A5 - G5 F5 | E5 - C5 E5 G5 - - . | F5 E5 D5 C5 B4 C5 D5 E5 | C5 - - - - . . .',
+   bass:'C3 . G2 . C3 . G2 . | G2 . D3 . G2 . D3 . | C3 . G2 . C3 . G2 . | G2 . B2 . G2 . D3 . | F2 . C3 . F2 . C3 . | C3 . G2 . C3 . E3 . | F2 . G2 . G2 . G2 . | C3 . G2 . C3 . . .'},
+ town:{bpm:116,drums:1,lead:'A4 C5 F5 - E5 C5 D5 - | C5 A4 F4 - G4 A4 G4 - | A4 C5 F5 - G5 F5 E5 - | D5 - E5 - F5 - - . | Bb4 D5 F5 - D5 Bb4 C5 - | A4 C5 F5 - E5 D5 C5 - | G4 A4 Bb4 C5 D5 E5 G5 - | F5 - C5 - F5 - - .',
+   bass:'F2 . C3 . F2 . C3 . | F2 . A2 . C3 . A2 . | F2 . C3 . F2 . C3 . | Bb2 . C3 . F2 . C3 . | Bb2 . F2 . Bb2 . F2 . | F2 . C3 . F2 . A2 . | C3 . C3 . C3 . E2 . | F2 . C3 . F2 . . .'},
+ home:{bpm:92,lead:'B4 - D5 - G5 - F#5 - | E5 - D5 - B4 - - . | C5 - E5 - A5 - G5 - | F#5 - D5 - - - - . | B4 - D5 - G5 - B5 - | A5 - G5 - E5 - - . | C5 - D5 - E5 - F#5 - | G5 - - - - . . .',
+   bass:'G2 . D3 . G2 . D3 . | E2 . B2 . E2 . B2 . | C3 . G2 . C3 . G2 . | D3 . A2 . D3 . A2 . | G2 . D3 . G2 . D3 . | E2 . B2 . C3 . G2 . | A2 . E3 . D3 . D3 . | G2 . D3 . G2 . . .'},
+ forest:{bpm:126,drums:1,lead:'D5 - A4 D5 F5 - E5 D5 | C5 - A4 - G4 - A4 - | D5 - A4 D5 F5 - G5 A5 | G5 - E5 - - - . . | F5 - E5 D5 C5 - D5 E5 | F5 - G5 - A5 - - . | Bb5 - A5 G5 F5 - E5 D5 | E5 - - - D5 - - .',
+   bass:'D3 . A2 . D3 . A2 . | C3 . G2 . C3 . G2 . | D3 . A2 . D3 . A2 . | C3 . G2 . E3 . G2 . | F2 . C3 . F2 . C3 . | F2 . C3 . A2 . C3 . | Bb2 . F2 . Bb2 . F2 . | A2 . E3 . D3 . . .'},
+ battle:{bpm:160,drums:2,lead:'A4 A4 C5 A4 E5 A4 D5 C5 | B4 G4 B4 D5 E5 - - . | A4 A4 C5 A4 E5 A4 G5 F5 | E5 D5 C5 B4 C5 - B4 . | F5 - E5 - D5 - C5 - | D5 - C5 - B4 - G4 - | A4 C5 E5 A5 G5 E5 C5 E5 | B4 - - - E5 - - .',
+   bass:'A2 A2 A3 A2 A2 A2 A3 A2 | G2 G2 G3 G2 G2 G2 G3 G2 | A2 A2 A3 A2 A2 A2 A3 A2 | E2 E2 E3 E2 E2 E2 E3 E2 | F2 F2 F3 F2 F2 F2 F3 F2 | G2 G2 G3 G2 G2 G2 G3 G2 | A2 A2 A3 A2 A2 A2 A3 A2 | E2 E2 E3 E2 E2 E2 E3 E2'},
+ boss:{bpm:172,drums:2,lead:'E5 - E5 G5 F#5 - E5 D#5 | E5 - B4 - - - . . | C5 - C5 E5 D5 - C5 B4 | A4 - B4 - C5 - D#5 - | E5 G5 B5 G5 E5 G5 B5 G5 | C6 - B5 - A5 - G5 - | F#5 - G5 - A5 - B5 - | B5 - - - B4 - - .',
+   bass:'E2 E2 E3 E2 E2 E2 E3 E2 | E2 E2 E3 E2 D#2 D#2 D#3 D#2 | C2 C2 C3 C2 C2 C2 C3 C2 | A2 A2 A3 A2 B2 B2 B3 B2 | E2 E2 E3 E2 E2 E2 E3 E2 | C2 C2 C3 C2 C2 C2 C3 C2 | D2 D2 D3 D2 D2 D2 D3 D2 | B1 B1 B2 B1 B1 B1 B2 B1'},
+ chalet:{bpm:100,lead:'C5 - - A4 - - | F5 - - E5 - D5 | C5 - - - - . | Bb4 - - A4 - G4 | A4 - - C5 - - | F5 - - A5 - G5 | F5 - - E5 - - | F5 - - - - .',
+   bass:'F2 . A2 . C3 . | F2 . A2 . C3 . | C2 . E2 . G2 . | C2 . E2 . G2 . | F2 . A2 . C3 . | D2 . F2 . A2 . | C2 . E2 . G2 . | F2 . A2 . C3 .'},
+ mer:{bpm:120,drums:1,lead:'E5 - G5 - . E5 D5 C5 | D5 - . C5 A4 - G4 - | E5 - G5 - . A5 G5 E5 | D5 - - - . . . . | F5 - A5 - . F5 E5 D5 | E5 - . D5 C5 - A4 - | G4 A4 C5 D5 E5 - D5 C5 | C5 - - - . . . .',
+   bass:'C3 . . C3 G2 . C3 . | A2 . . A2 E2 . A2 . | C3 . . C3 G2 . C3 . | G2 . . G2 D3 . G2 . | F2 . . F2 C3 . F2 . | C3 . . C3 G2 . A2 . | F2 . . F2 G2 . G2 . | C3 . . C3 G2 . C3 .'},
+ milan:{bpm:150,lead:'A4 C5 E5 A5 G5 F5 | E5 - C5 A4 - - | D5 F5 A5 D6 C6 B5 | A5 - E5 C5 - - | E5 G#5 B5 E6 D6 B5 | C6 - A5 E5 - - | F5 E5 D5 C5 B4 G#4 | A4 - - A4 - .',
+   bass:'A2 . E3 A2 . E3 | A2 . E3 A2 . E3 | D2 . A2 D2 . A2 | A2 . E3 A2 . E3 | E2 . B2 E2 . B2 | A2 . E3 A2 . E3 | D2 . A2 E2 . B2 | A2 . E3 A2 . .'},
+ fete:{bpm:138,drums:1,lead:'G4 C5 E5 G5 - E5 G5 - | A5 G5 F5 E5 D5 - - . | F4 B4 D5 F5 - D5 F5 - | G5 F5 E5 D5 C5 - - . | E5 - E5 F5 G5 - C6 - | A5 - G5 - E5 - C5 - | D5 - E5 - F5 - B4 - | C5 - G4 - C5 - - .',
+   bass:'C3 . G2 . C3 . G2 . | F2 . C3 . G2 . G2 . | G2 . D3 . G2 . D3 . | G2 . B2 . C3 . G2 . | C3 . G2 . C3 . E3 . | F2 . C3 . A2 . F2 . | G2 . G2 . G2 . G2 . | C3 . G2 . C3 . . .'},
+ ombre:{bpm:80,lead:'E4 - - - F4 - - - | E4 - - - D#4 - - - | E4 - G4 - F#4 - E4 - | B3 - - - - - - .',
+   bass:'E2 - - - - - - - | E2 - - - - - - - | C2 - - - - - - - | B1 - - - - - - -'}};
+function nf(n){const m=/^([A-G])(#|b)?(\d)$/.exec(n);if(!m)return 0;const b={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);return 440*Math.pow(2,((+m[3]+1)*12+b-69)/12);}
+function trk(name){const t=TRACKS[name];if(!t.L){const tok=x=>x.replace(/\|/g,' ').trim().split(/\s+/);t.L=tok(t.lead);t.Bs=tok(t.bass);}return t;}
+function musicPlay(name){if(MUS.cur===name)return;MUS.cur=name;MUS.step=0;if(MUS.gain&&AC){const g0=MUS.gain;g0.gain.setTargetAtTime(0,AC.currentTime,.12);setTimeout(()=>{try{g0.disconnect();}catch(e){}},900);}MUS.gain=null;}
+function voice(seq,i,t,dt,type,vol){const tk=seq[i%seq.length];if(tk==='.'||tk==='-')return;const f=nf(tk);if(!f)return;let n=1;while(seq[(i+n)%seq.length]==='-'&&n<seq.length)n++;const dur=n*dt;
+  const o=AC.createOscillator(),gn=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(vol,t+.008);gn.gain.linearRampToValueAtTime(vol*.6,t+Math.min(.15,dur*.5));gn.gain.setValueAtTime(vol*.6,t+dur*.85);gn.gain.linearRampToValueAtTime(0,t+dur*.98);o.connect(gn).connect(MUS.gain);o.start(t);o.stop(t+dur);}
+function drum(i,t,kind){if(!MUS.nb){const n=Math.floor(AC.sampleRate*.05),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let k=0;k<n;k++)d[k]=(Math.random()*2-1)*(1-k/n);MUS.nb=b;}
+  if(i%2===0||kind===2){const s=AC.createBufferSource();s.buffer=MUS.nb;const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=6000;const g=AC.createGain();g.gain.value=.05;s.connect(f).connect(g).connect(MUS.gain);s.start(t);}
+  if(i%8===0||(kind===2&&i%4===0)){const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(40,t+.12);g.gain.setValueAtTime(.35,t);g.gain.exponentialRampToValueAtTime(.001,t+.14);o.connect(g).connect(MUS.gain);o.start(t);o.stop(t+.15);}}
+function musicTick(){if(!AC||!MUS.cur)return;if(!MUS.gain){MUS.gain=AC.createGain();MUS.gain.connect(AC.destination);MUS.next=AC.currentTime+.08;}MUS.gain.gain.value=muted?0:MUS_VOL;
+  const tr=trk(MUS.cur),dt=60/tr.bpm/2;if(MUS.next<AC.currentTime-.5)MUS.next=AC.currentTime+.05;
+  while(MUS.next<AC.currentTime+.25){const i=MUS.step;voice(tr.L,i,MUS.next,dt,'square',.05);voice(tr.Bs,i,MUS.next,dt,'triangle',.11);if(tr.drums)drum(i,MUS.next,tr.drums);MUS.step=(i+1)%tr.L.length;MUS.next+=dt;}}
+const BOSSES=['arbre','comte','dimanche','rouleau','baron','renouee','jury','paperasse','murene'];
+function pickMusic(){if(scene===BAT&&BAT.B){const o=BAT.B.o;return(o.boss||o.final||o.solo||BOSSES.includes(o.foe))?'boss':'battle';}
+  if(scene===WORLD&&WORLD.map){const id=WORLD.map.id;if(id==='town')return WORLD.player&&WORLD.player.x>=31?'forest':'town';return{home:'home',atelier:'home',bungalow:'home',hauts:'forest',chalet:'chalet',mer:'mer',milan:'milan'}[id]||'town';}
+  if(scene===CINE&&CINE.pages&&CINE.pages[CINE.i])return CINE.pages[CINE.i].v==='shadow'?'ombre':'title';
+  if(scene===FETE)return'fete';return'title';}
+/* ================= LOOP ================= */
+function drawToast(){if(!TOAST)return;TOAST.n--;if(TOAST.n<=0){TOAST=null;return;}const yo=TOAST.n>150?(TOAST.n-170)*4:TOAST.n<20?(20-TOAST.n)*-4:0;D.font=F_SM;const w=D.measureText(TOAST.t).width+70;box(480-w/2,14+yo,w,58,'#2c3150',C.gold);txt('★',480-w/2+26,52+yo,F_SM,C.gold,null);txt(TOAST.t,480-w/2+52,52+yo,F_SM,'#fbf7ec',null);}
+function tick(){pressed=pressQ;pressQ=new Set();T++;
+  for(let i=waits.length-1;i>=0;i--){const w=waits[i];if(w.pred?w.pred():--w.n<=0){waits.splice(i,1);w.r();}}
+  for(let i=tweens.length-1;i>=0;i--){const t=tweens[i];t.i++;const k=Math.min(1,t.i/t.n);t.o[t.k]=t.from+(t.to-t.from)*EASE[t.ease](k);if(k>=1){tweens.splice(i,1);t.r();}}
+  if(!UI.update()&&scene)scene.update();if(T%6===0){musicPlay(pickMusic());musicTick();}}
+function render(){g.setTransform(1,0,0,1,0,0);g.imageSmoothingEnabled=false;if(scene)scene.draw(g);D.setTransform(1,0,0,1,0,0);D.imageSmoothingEnabled=false;D.drawImage(low,0,0,SW*S,SH*S);
+  if(scene&&scene.ui)scene.ui();if(FADE>0){D.fillStyle=`rgba(8,6,14,${FADE})`;D.fillRect(0,0,960,640);}UI.draw();if(FLASH>0){D.fillStyle=`rgba(255,255,255,${FLASH})`;D.fillRect(0,0,960,640);}drawToast();}
+let last=performance.now(),acc=0;
+function frame(now){acc+=Math.min(120,now-last);last=now;while(acc>=1000/60){tick();acc-=1000/60;}render();requestAnimationFrame(frame);}
+D.fillStyle='#15121d';D.fillRect(0,0,960,640);D.fillStyle='#9d95b0';D.font='24px sans-serif';D.textAlign='center';D.fillText('Chargement…',480,330);D.textAlign='left';
+const fontsReady=document.fonts?Promise.all([document.fonts.load(F_DLG),document.fonts.load(F_UI),document.fonts.load(PS(20))]).catch(()=>{}):Promise.resolve();
+Promise.race([fontsReady,new Promise(r=>setTimeout(r,2500))]).then(()=>{scene=TITLE;requestAnimationFrame(frame);cv.focus({preventScroll:true});});
+</script>
+
+</body>
+</html>
